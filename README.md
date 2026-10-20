@@ -74,10 +74,10 @@ Clone the repo into your skills folder. The folder name should match the skill n
 
 ```bash
 # personal (all projects)
-git clone https://github.com/<owner>/lab-builder-skill.git ~/.claude/skills/lab-builder-skill
+git clone https://github.com/ra7orblade/lab-builder-skill.git ~/.claude/skills/lab-builder-skill
 
 # or for one project only
-git clone https://github.com/<owner>/lab-builder-skill.git .claude/skills/lab-builder-skill
+git clone https://github.com/ra7orblade/lab-builder-skill.git .claude/skills/lab-builder-skill
 ```
 
 Restart Claude Code. The skill is picked up automatically when you ask for a lab.
