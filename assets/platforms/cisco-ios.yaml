@@ -1,0 +1,25 @@
+# Platform profile for Cisco IOS / IOS XE (IOL-XE, IOSv, CSR1000v, Cat8000v ...).
+# Used by `labkit.py configs` to generate initial configs from topology.yaml.
+# Placeholders: {name} {ifname} {ip} {mask} {prefix} {ipv6} {description} {text}
+comment: "!"
+extension: .cfg
+base:
+  - "hostname {name}"
+  - "no ip domain lookup"
+  - "cdp run"
+  - "line con 0"
+  - " exec-timeout 0 0"
+  - " logging synchronous"
+  - "exit"
+iface_open: "interface {ifname}"
+iface_description: " description {description}"
+iface_ipv4: " ip address {ip} {mask}"
+iface_ipv6: " ipv6 address {ipv6}"
+iface_noip: [" no ip address"]                # linked but not addressed (learner configures it)
+iface_up: [" no shutdown"]
+iface_unused: [" no ip address", " shutdown"]   # IOL enters the setup dialog if an interface has no IP config
+iface_close: "exit"
+loopback_prefixes: ["loopback"]
+ipv6_global: "ipv6 unicast-routing"            # emitted only when some interface has IPv6
+separator: "!"
+footer: "end"

@@ -1,0 +1,124 @@
+/* Print stylesheet for lab guides and answer keys (used by scripts/md2pdf.py). */
+:root {
+  --ink: #1b2430;
+  --muted: #5b6676;
+  --rule: #d5dbe3;
+  --code-bg: #f4f6f9;
+  --accent: #1f5f99;
+  --predict: #7c3aed;
+  --task: #1f5f99;
+  --checkpoint: #15803d;
+  --question: #b45309;
+  --break: #b91c1c;
+  --note: #475569;
+  --beyond: #0e7490;
+  --hint: #a16207;
+  --ticket: #be123c;
+}
+
+@page {
+  size: A4;
+  margin: 18mm 16mm 18mm 16mm;
+  @bottom-left { font: 8pt "DejaVu Sans", "Noto Sans", Helvetica, sans-serif; color: #5b6676; }
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font: 8pt "DejaVu Sans", "Noto Sans", Helvetica, sans-serif; color: #5b6676;
+  }
+}
+
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  font: 10pt/1.5 "Inter", "Noto Sans", "DejaVu Sans", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: #fff;
+  margin: 0;
+}
+
+h1, h2, h3, h4 { line-height: 1.25; break-after: avoid; page-break-after: avoid; }
+h1 {
+  font-size: 21pt; margin: 0 0 4mm; padding-bottom: 2.5mm;
+  border-bottom: 3px solid var(--accent);
+}
+h2 {
+  font-size: 14.5pt; margin: 8mm 0 3mm; padding: 1.5mm 3mm;
+  background: #eaf1f8; border-left: 4px solid var(--accent);
+}
+h3 { font-size: 12pt; margin: 6mm 0 2mm; color: var(--accent); }
+h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; }
+h2 + h3 { margin-top: 3mm; }
+p { margin: 0 0 2.4mm; orphans: 3; widows: 3; }
+a { color: var(--accent); text-decoration: none; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 5mm 0; }
+img, svg { max-width: 100%; }
+p > img:only-child { display: block; margin: 2mm auto 4mm; max-height: 150mm; }
+
+code {
+  font: 8.8pt "JetBrains Mono", "DejaVu Sans Mono", "Noto Sans Mono", Consolas, monospace;
+  background: var(--code-bg); padding: 0.2mm 1mm; border-radius: 2px;
+}
+pre {
+  background: var(--code-bg); border: 1px solid var(--rule); border-radius: 4px;
+  padding: 2.5mm 3mm; margin: 1mm 0 3mm; white-space: pre-wrap; word-break: break-word;
+  break-inside: avoid; page-break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: 8.4pt; line-height: 1.4; }
+
+table { border-collapse: collapse; width: 100%; margin: 1.5mm 0 4mm; font-size: 9pt; break-inside: auto; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; page-break-inside: avoid; }
+th { background: #24364b; color: #fff; text-align: left; font-weight: 600; }
+th, td { border: 1px solid var(--rule); padding: 1.3mm 2mm; vertical-align: top; }
+tbody tr:nth-child(even) td { background: #f7f9fb; }
+tbody td:empty { height: 8mm; }
+
+ul, ol { margin: 0 0 2.5mm; padding-left: 6mm; }
+li { margin: 0.6mm 0; }
+li.task { list-style: none; margin-left: -5mm; }
+.box { font-size: 11pt; }
+
+blockquote {
+  margin: 2mm 0 3mm; padding: 2mm 3.5mm; border-left: 4px solid var(--rule);
+  background: #f8fafc; border-radius: 0 4px 4px 0; break-inside: avoid; page-break-inside: avoid;
+}
+blockquote p:last-child { margin-bottom: 0; }
+.callout { border-left-width: 5px; }
+.callout > p:first-child > strong:first-child { text-transform: uppercase; letter-spacing: 0.04em; font-size: 8.6pt; }
+.callout-predict    { border-color: var(--predict);    background: #f5f1fe; }
+.callout-predict    > p:first-child > strong:first-child { color: var(--predict); }
+.callout-task       { border-color: var(--task);       background: #eef4fb; }
+.callout-task       > p:first-child > strong:first-child { color: var(--task); }
+.callout-checkpoint { border-color: var(--checkpoint); background: #eef8f1; }
+.callout-checkpoint > p:first-child > strong:first-child { color: var(--checkpoint); }
+.callout-question   { border-color: var(--question);   background: #fdf6ec; }
+.callout-question   > p:first-child > strong:first-child { color: var(--question); }
+.callout-break      { border-color: var(--break);      background: #fdf0f0; }
+.callout-break      > p:first-child > strong:first-child { color: var(--break); }
+.callout-note       { border-color: var(--note);       background: #f4f6f8; }
+.callout-note       > p:first-child > strong:first-child { color: var(--note); }
+.callout-warning    { border-color: #c2410c;           background: #fff4ec; }
+.callout-warning    > p:first-child > strong:first-child { color: #c2410c; }
+.callout-beyond     { border-color: var(--beyond);     background: #ecf7f9; }
+.callout-beyond     > p:first-child > strong:first-child { color: var(--beyond); }
+.callout-hint       { border-color: var(--hint);       background: #fdf9ea; }
+.callout-hint       > p:first-child > strong:first-child { color: var(--hint); }
+.callout-concept    { border-color: var(--accent);     background: #f3f7fb; }
+.callout-concept    > p:first-child > strong:first-child { color: var(--accent); }
+.callout-ticket     { border-color: var(--ticket);     background: #fdf0f3; }
+.callout-ticket     > p:first-child > strong:first-child { color: var(--ticket); }
+.callout-answer     { border-color: var(--checkpoint); background: #f2f9f4; }
+
+/* Space for the learner to write. In Markdown: <div class="answer"></div> */
+.answer {
+  min-height: 22mm; margin: 1mm 0 4mm; border: 1px dashed #b8c2cf; border-radius: 4px;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 6.6mm, #e3e8ee 6.6mm, #e3e8ee 6.9mm);
+  background-position: 0 2mm; break-inside: avoid;
+}
+.answer.short { min-height: 10mm; }
+.answer.tall { min-height: 42mm; }
+
+.meta { color: var(--muted); font-size: 9pt; margin: -2mm 0 4mm; }
+.page-break { break-after: page; page-break-after: always; }
+.center { text-align: center; }
+
+/* Pass/fail and checklist tables */
+td.pass, th.pass { width: 14mm; text-align: center; }

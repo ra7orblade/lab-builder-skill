@@ -1,0 +1,1 @@
+> **Note:** There is usually more than one correct configuration. If yours differs but passes every Checkpoint, work out *why* both work. That comparison is worth more than matching this key line for line.

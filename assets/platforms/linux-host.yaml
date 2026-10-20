@@ -1,0 +1,18 @@
+# Platform profile for Linux hosts whose config is a shell script run at boot
+# (CML alpine/ubuntu-style "node.cfg"). Node field `gateway:` sets the default route.
+comment: "#"
+extension: .sh
+base:
+  - "hostname {name}"
+  - "USERNAME=cisco"
+  - "PASSWORD=cisco"
+iface_open: ""
+iface_ipv4: "ip address add {ip}/{prefix} dev {ifname}"
+iface_ipv6: "ip -6 address add {ipv6} dev {ifname}"
+iface_up: ["ip link set dev {ifname} up"]
+iface_unused: []
+iface_close: ""
+gateway_v4: "ip route add default via {gateway}"
+gateway_v6: "ip -6 route add default via {gateway6}"
+separator: ""
+footer: ""
