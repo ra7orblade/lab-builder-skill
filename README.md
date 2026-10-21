@@ -49,6 +49,7 @@ A typical guide contains:
 | Everything | Python 3.8+ and [PyYAML](https://pypi.org/project/PyYAML/) |
 | PDF chapters as input | `poppler-utils` (`pdftotext`, `pdftohtml`, `pdftoppm`) |
 | PDF guides as output | [WeasyPrint](https://weasyprint.org/) **or** a Chromium-based browser (Chromium, Chrome, Edge, Brave; or set `CHROME_PATH`) |
+| Fillable answer boxes in the PDF (recommended) | [pypdf](https://pypi.org/project/pypdf/). Without it the boxes are drawn but can't be typed into |
 | Page preview image (optional) | [Pillow](https://pypi.org/project/pillow/) |
 | Nicer Markdown rendering (optional) | [Python-Markdown](https://pypi.org/project/Markdown/). A built-in converter is used otherwise |
 | Emulator build (optional) | An MCP server for your emulator, e.g. [`cml-mcp`](https://pypi.org/project/cml-mcp/) for CML |
@@ -56,13 +57,13 @@ A typical guide contains:
 Example install on Debian/Ubuntu:
 
 ```bash
-sudo apt install python3-yaml poppler-utils chromium
+sudo apt install python3-yaml python3-pypdf poppler-utils chromium
 ```
 
 macOS (Homebrew):
 
 ```bash
-brew install poppler && pip3 install pyyaml
+brew install poppler && pip3 install pyyaml pypdf
 # Google Chrome in /Applications is detected automatically
 ```
 
@@ -136,6 +137,8 @@ python3 scripts/labkit.py lint     LAB/lab-guide.md
 # Render any lab Markdown file to PDF
 python3 scripts/md2pdf.py LAB/lab-guide.md --preview preview.png
 ```
+
+The PDF guide is a fillable form. Every answer box, ticket worksheet, "Pass?" column and command-reference cell is a text field, so learners can type their answers in any PDF reader on a laptop or tablet (Okular, Adobe Acrobat Reader, Xodo, Firefox and others). Pass `--no-forms` to `md2pdf.py` for a plain PDF.
 
 `build` is idempotent. A successful run ends with `lint: 0 issue(s)` and `build: OK`. The linter flags missing hints, broken images, questions without an answer box, unfilled `{{placeholders}}`, and any solution command that leaks into the learner guide.
 

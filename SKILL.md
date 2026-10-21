@@ -10,7 +10,7 @@ description: |
 
 You turn a book chapter into a lab the learner **builds themselves**. Netacad-style structure (`references/lab-anatomy.md`) plus `learn` principles: diagnose first, tasks instead of commands, predict before acting and explain after, fading scaffolds, graded hints, real troubleshooting. Answers live in a separate answer key.
 
-`SKILL_DIR` means this skill's folder. `LAB` means the output lab folder. Scripts need Python 3 + PyYAML, plus poppler-utils for PDF input and Chromium (or WeasyPrint) for PDFs.
+`SKILL_DIR` means this skill's folder. `LAB` means the output lab folder. Scripts need Python 3 + PyYAML, plus poppler-utils for PDF input and Chromium (or WeasyPrint) for PDFs. pypdf makes the PDF answer boxes fillable; without it they are drawn only.
 
 ## Token budget rules (read first)
 
@@ -97,6 +97,8 @@ Copy `assets/lab-readme-template.md` → `LAB/README.md` and fill it in.
 ```bash
 python3 SKILL_DIR/scripts/labkit.py build LAB --pdf     # must end with "lint: 0 issue(s)" and "build: OK"
 ```
+
+If the PDF line says the answer fields are "NOT fillable", pypdf is missing. Tell the user, and offer to install it (ask first, per the hard rules).
 
 Then read `LAB/_work/preview-guide.png`, one image, and fix anything visibly broken. The checklist that `lint` cannot do for you:
 

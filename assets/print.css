@@ -69,7 +69,7 @@ tr { break-inside: avoid; page-break-inside: avoid; }
 th { background: #24364b; color: #fff; text-align: left; font-weight: 600; }
 th, td { border: 1px solid var(--rule); padding: 1.3mm 2mm; vertical-align: top; }
 tbody tr:nth-child(even) td { background: #f7f9fb; }
-tbody td:empty { height: 8mm; }
+tbody td:empty, td.fill { height: 8mm; }
 
 ul, ol { margin: 0 0 2.5mm; padding-left: 6mm; }
 li { margin: 0.6mm 0; }

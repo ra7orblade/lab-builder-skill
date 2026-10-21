@@ -16,6 +16,10 @@ in headless mode (chromium, google-chrome, msedge, brave; or $CHROME_PATH).
 
 Blockquotes that start with a bold label (e.g. "> **Predict:** ...") get a CSS class
 `callout callout-predict` so they render as coloured boxes.
+
+Answer boxes (<div class="answer"></div>) and the cells of all-empty table columns (ticket
+worksheets, "Pass?" columns, the command reference) become fillable PDF form fields when pypdf
+is installed. Without it the PDF still renders, with drawn boxes only. --no-forms turns this off.
 """
 import argparse
 import html
@@ -267,6 +271,134 @@ def add_callout_classes(h):
     return re.sub(r"<blockquote>(\s*<p>)<strong>([^<]{1,40})</strong>", repl, h)
 
 
+# --------------------------------------------------------------------------- fillable fields
+
+# Every answer box and every cell of an all-empty table column gets an invisible link to FIELD_URI + index.
+# Chromium and WeasyPrint both keep a link's exact box as a PDF annotation; add_form_fields() then turns
+# each of those annotations into an AcroForm text field that any PDF reader (laptop or tablet) can fill.
+FIELD_URI = "https://pdf-field.invalid/"
+FIELD_CSS = ".answer, td.fill { position: relative; }\na.pdf-field { position: absolute; inset: 0; display: block; }\n"
+TOKEN_RE = re.compile(r"<h[1-4][^>]*>(?P<head>.*?)</h[1-4]>|<blockquote[^>]*>(?P<quote>.*?)</blockquote>|"
+                      r'<div class="(?P<cls>answer[^"]*)">\s*</div>|<table>(?P<table>.*?)</table>', re.S)
+CELL_RE = re.compile(r"<td([^>]*)>(.*?)</td>", re.S)
+
+
+def plain(h):
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", h))).strip()
+
+
+def mark_fields(body):
+    """Insert the field links. Returns (html, specs); specs[i] describes the field behind link i."""
+    specs, names = [], set()
+    state = {"section": "", "prompt": ""}
+
+    def field(name, tip, size):
+        name = re.sub(r"[.\s]+", " ", name).strip()[:100] or "Answer"  # '.' would nest fields
+        base, k = name, 1
+        while name in names:
+            k += 1
+            name = f"{base} ({k})"
+        names.add(name)
+        specs.append({"name": name, "tip": tip[:300], "size": size})
+        return f'<a class="pdf-field" href="{FIELD_URI}{len(specs) - 1}"></a>'
+
+    def table(tbl):
+        if "<tbody>" not in tbl:
+            return tbl
+        head, _, rows = tbl.partition("<tbody>")
+        heads = [plain(h) for h in re.findall(r"<th[^>]*>(.*?)</th>", head, re.S)]
+        trs = re.findall(r"<tr>.*?</tr>", rows, re.S)
+        cells = [[plain(c[1]) for c in CELL_RE.findall(tr)] for tr in trs]
+        empty = {c for c in range(len(heads)) if all(c >= len(r) or not r[c] for r in cells)}
+        if not empty:
+            return tbl
+        out = []
+        for r, tr in enumerate(trs):
+            label = " | ".join(c for c in cells[r] if c)
+            col = iter(range(len(cells[r])))
+
+            def td(m):
+                c = next(col)
+                if c not in empty:
+                    return m.group(0)
+                h = heads[c] or f"Column {c + 1}"
+                name = f"{state['section']} - {h}" + (f" {r + 1}" if len(trs) > 1 else "")
+                return f'<td class="fill"{m.group(1)}>' + field(name, f"{h}: {label}" if label else h, 9) + "</td>"
+            out.append(CELL_RE.sub(td, tr))
+        return head + "<tbody>" + "".join(out) + rows[rows.rindex("</tr>") + 5:]
+
+    def repl(m):
+        if m["head"] is not None:
+            state["section"], state["prompt"] = plain(m["head"]), ""
+        elif m["quote"] is not None:
+            state["prompt"] = plain(m["quote"])
+        elif m["cls"] is not None:
+            kind = re.match(r"[^:]{1,40}(?=:)", state["prompt"])
+            name = f"{state['section']} - {kind.group(0) if kind else 'Answer'}"
+            tip, state["prompt"] = state["prompt"] or state["section"], ""
+            return f'<div class="{m["cls"]}">{field(name, tip, 10)}</div>'
+        else:
+            return "<table>" + table(m["table"]) + "</table>"
+        return m.group(0)
+
+    return TOKEN_RE.sub(repl, body), specs
+
+
+def have_pypdf():
+    try:
+        import pypdf  # noqa: F401  # type: ignore
+        return True
+    except ImportError:
+        return False
+
+
+def add_form_fields(pdf, specs):
+    """Turn the field links left by mark_fields() into AcroForm text fields. Returns the number made."""
+    from pypdf import PdfWriter  # type: ignore
+    from pypdf.generic import (ArrayObject, BooleanObject, DecodedStreamObject, DictionaryObject, FloatObject,
+                               IndirectObject, NameObject, NumberObject, TextStringObject)  # type: ignore
+
+    def d(**kw):
+        return DictionaryObject({NameObject("/" + k): v for k, v in kw.items()})
+
+    w = PdfWriter(clone_from=str(pdf))
+    helv = w._add_object(d(Type=NameObject("/Font"), Subtype=NameObject("/Type1"),
+                           BaseFont=NameObject("/Helvetica"), Encoding=NameObject("/WinAnsiEncoding")))
+    fields = ArrayObject()
+    for page in w.pages:
+        annots = page.get("/Annots")
+        annots = annots.get_object() if annots is not None else []
+        for k in range(len(annots)):
+            a = annots[k].get_object()
+            act = a.get("/A")
+            uri = str(act.get_object().get("/URI", "")) if act is not None else ""
+            if a.get("/Subtype") != "/Link" or not uri.startswith(FIELD_URI):
+                continue
+            spec = specs[int(uri[len(FIELD_URI):])]
+            for key in ("/A", "/Border", "/BS", "/H", "/C"):
+                a.pop(key, None)
+            x0, y0, x1, y1 = (float(v) for v in a["/Rect"])
+            blank = DecodedStreamObject()  # empty appearance; NeedAppearances makes readers draw typed text
+            blank.set_data(b"/Tx BMC EMC")
+            blank.update(d(Type=NameObject("/XObject"), Subtype=NameObject("/Form"),
+                           BBox=ArrayObject([FloatObject(0), FloatObject(0),
+                                             FloatObject(abs(x1 - x0)), FloatObject(abs(y1 - y0))])))
+            a.update(d(Subtype=NameObject("/Widget"), FT=NameObject("/Tx"), T=TextStringObject(spec["name"]),
+                       TU=TextStringObject(spec["tip"]), Ff=NumberObject(4096),  # 4096 = multiline
+                       DA=TextStringObject(f"/Helv {spec['size']} Tf 0 g"), F=NumberObject(4),  # 4 = print
+                       P=page.indirect_reference, MK=DictionaryObject(), V=TextStringObject(""),
+                       AP=d(N=w._add_object(blank))))
+            if not isinstance(annots[k], IndirectObject):
+                annots[k] = w._add_object(a)
+            fields.append(annots[k])
+    if fields:
+        w.root_object[NameObject("/AcroForm")] = d(Fields=fields, NeedAppearances=BooleanObject(True),
+                                                   DA=TextStringObject("/Helv 0 Tf 0 g"),
+                                                   DR=d(Font=d(Helv=helv)))
+        w.write(str(pdf))
+    return len(fields)
+
+
 # --------------------------------------------------------------------------- pdf
 
 
@@ -356,6 +488,7 @@ def main():
     ap.add_argument("--footer", default="", help="text for the page footer (left side)")
     ap.add_argument("--keep-html", action="store_true")
     ap.add_argument("--preview", help="also write a contact-sheet PNG of all pages")
+    ap.add_argument("--no-forms", action="store_true", help="don't make answer boxes fillable")
     a = ap.parse_args()
     src = Path(a.markdown).resolve()
     out = Path(a.out).resolve() if a.out else src.with_suffix(".pdf")
@@ -365,6 +498,12 @@ def main():
     footer = html.escape(a.footer or title).replace('"', "'")
     css += f'\n@page {{ @bottom-left {{ content: "{footer}"; }} }}\n'
     body = add_callout_classes(md_to_html(md))
+    specs, forms = [], not a.no_forms and have_pypdf()
+    if not a.no_forms:
+        marked, specs = mark_fields(body)
+        if forms:
+            body = marked
+            css += FIELD_CSS
     doc = (f'<!doctype html><html><head><meta charset="utf-8"><title>{html.escape(title)}</title>'
            f'<base href="{src.parent.as_uri()}/"><style>{css}</style></head><body>{body}</body></html>')
     html_path = src.with_suffix(".html")
@@ -380,6 +519,10 @@ def main():
         if not keep:
             html_path.unlink(missing_ok=True)
     msg = f"wrote {out.name} (engine: {engine})"
+    if specs and forms:
+        msg += f", {add_form_fields(out, specs)} fillable field(s)"
+    elif specs:
+        msg += f", {len(specs)} answer field(s) NOT fillable: install pypdf"
     if a.preview:
         Path(a.preview).parent.mkdir(parents=True, exist_ok=True)
         contact_sheet(out, a.preview)

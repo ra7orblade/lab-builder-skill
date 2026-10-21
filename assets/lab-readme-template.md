@@ -4,7 +4,7 @@ A hands-on lab for **{{Book}}, Chapter {{N}}: {{Chapter title}}**, built for {{p
 
 ## Start here
 
-1. Open `lab-guide.pdf` (or `lab-guide.md`).
+1. Open `lab-guide.pdf` (or `lab-guide.md`). The answer boxes and worksheets in the PDF are fillable, so you can type your answers in any PDF reader on a laptop or tablet.
 2. Build the topology: {{"open the CML lab '<name>'" | "import topology/cml-lab.yaml" | "follow the topology diagram"}}.
 3. Work through the guide. Hints are in Appendix A, one level at a time.
 4. Open `solutions/` only once you have a working result.
