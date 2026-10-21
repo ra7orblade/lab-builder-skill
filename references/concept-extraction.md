@@ -14,9 +14,9 @@ python3 <skill>/scripts/extract_chapter.py <chapter.pdf> [notes.md ...] -o "<LAB
 |---|---|
 | `outline.md` | The chapter's structure. Read it first; its headings become the inventory skeleton. |
 | `chapter.txt` | The full text with `=== [ref] ===` markers. Watermarks and running headers are removed and layout padding is squeezed, about 20% fewer tokens. **Read it once, in large chunks.** Don't sample, and don't re-read. |
-| `commands.md` | CLI and config lines: monospace in PDFs, code blocks and spans in Markdown. Nearly every CONFIG and VERIFY item is here. |
-| `key-terms.md` | Bold or italic terms in body text: concept candidates. |
-| `captions.md` | Figures, tables and examples. Tables often hold defaults, comparisons and decision orders. |
+| `commands.md` | Index of every distinct CLI and config command, once, with the page where it first appears (monospace in PDFs, code blocks and spans in Markdown). Nearly every CONFIG and VERIFY item is here. The full example configs and outputs are in `chapter.txt`. |
+| `key-terms.md` | Bold or italic terms in body text: concept candidates. A lookup, not required reading. |
+| `captions.md` | Figures, tables and examples. Tables often hold defaults, comparisons and decision orders. A lookup, not required reading. |
 
 If a PDF yields almost no text, it's scanned. Ask the user for a Markdown or text version, or OCR it first (for example with `ocrmypdf`, which needs Tesseract; ask before installing it). If the user gives a whole book, ask which chapter, or find it in the outline and pass `--first/--last`.
 

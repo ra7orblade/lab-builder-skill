@@ -54,7 +54,7 @@ The learner's level sets the starting scaffold. Assume the course level unless t
 python3 SKILL_DIR/scripts/extract_chapter.py <chapter.pdf|.md|.txt> [more inputs] -o LAB/_work/extract
 ```
 
-Read `outline.md`, then `chapter.txt` once, in large chunks, with `commands.md` alongside. Inputs can be mixed, for example the PDF plus the learner's notes in Markdown. Details: `references/concept-extraction.md`.
+Read `outline.md` and `commands.md` (a short index of every distinct command, with its page), then `chapter.txt` once, in large chunks. `key-terms.md` and `captions.md` are lookups: open them only if you need them. Inputs can be mixed, for example the PDF plus the learner's notes in Markdown. Details: `references/concept-extraction.md`.
 
 ### 2. Concept inventory → `LAB/concept-map.md`
 
@@ -143,7 +143,7 @@ Don't paste the guide. Don't keep `_work/` in the delivered folder, unless the u
 When a learner asks for help, a hint, an explanation or study material (quiz, flashcards, summary) while working through a lab (rather than asking you to build one), skip the workflow above:
 
 1. Load `references/tutoring.md` and follow its tutoring loop.
-2. Find the lab folder. Read the relevant step in `lab-guide.md`, its hint in Appendix A, and the matching part of `solutions/answer-key.md`, so your help matches the lab's values and scaffold level.
+2. Find the lab folder and run `python3 SKILL_DIR/scripts/labkit.py lookup LAB <step>`, e.g. `3.2`, `3`, `t1` or `challenge`. It prints that step, its hints and the matching answer-key section, so your help matches the lab's values and scaffold level. Don't read the whole guide or answer key.
 3. Never paste solution configs or ticket answers unless the tutoring guide's conditions for telling are met.
 
 ## Reference files (load on demand)

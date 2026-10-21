@@ -28,7 +28,7 @@ If no server is connected, say so and deliver the import files (§5).
 
 1. `get_cml_labs` to check for title collisions. `get_cml_licensing_details` only if the node count is close to a free-tier limit.
 2. If a node definition isn't in `assets/cml-nodedefs.json`, call `get_node_definition_detail` once. Add its `device.interfaces.physical` list to that file, so you never need to look it up again, and re-run `build`.
-3. `create_full_lab_topology` with the **parsed JSON object** from `LAB/_work/cml-lab.json` (version 0.2.2, configs embedded). This is a single call.
+3. `create_full_lab_topology` with the **parsed JSON object** from `LAB/_work/cml-lab.json` (version 0.2.2, configs embedded). This is a single call. The file is deliberately compact, and the comment lines are stripped from its configs to save tool-call tokens. Pass it as it is; don't reformat it or add the comments back.
 4. `get_nodes_for_cml_lab` + `get_all_links_for_lab`: compare the counts and endpoints with `topology.yaml`.
 5. Start the lab only if asked: `start_cml_lab(wait_for_convergence=true)`.
 6. Report the lab title and ID. Tickets are **not** created as labs. Learners import `topology/ticket-N.cml.yaml` when they reach Part 7.

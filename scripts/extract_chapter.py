@@ -16,7 +16,8 @@ Produces, in OUTDIR:
   outline.md      headings (PDF: by font size; Markdown: by # level) with references
   key-terms.md    bold/italic phrases in body text (candidate concepts)
   captions.md     Figure / Table / Example / Listing captions
-  commands.md     CLI / config lines (PDF: monospace font; Markdown: code blocks and spans)
+  commands.md     index of distinct CLI / config commands, each once with its first reference
+                  (PDF: monospace font; Markdown: code blocks and spans)
   summary.json    counts per source
 
 PDF input needs poppler-utils (pdftotext, pdftohtml). Otherwise standard library only.
@@ -247,6 +248,27 @@ def extract_md(path):
 
 # --------------------------------------------------------------------------- output
 
+PROMPT = re.compile(r"^[\w.\-/@]+(\([\w\-/]+\))?[#>$%]\s*")
+OUTPUT_HINT = re.compile(r"\d+/\d+/\d+|\[\d+/\d+\]|\bvia\b|, \d\d:\d\d")
+
+
+def command_index(code):
+    """Each distinct command once, at its first reference. Lines typed after a prompt always count;
+    other lines count when they look like configuration (lowercase keyword, short, no output-style
+    fields). Example configs and show output stay in chapter.txt, which holds every line anyway."""
+    seen, out = set(), []
+    for ref, line in code:
+        typed = bool(PROMPT.match(line))
+        cmd = re.sub(r"\s+", " ", PROMPT.sub("", line) if typed else line).strip()
+        if not typed and not (re.match(r"^(no )?[a-z]", cmd) and len(cmd) < 90 and not OUTPUT_HINT.search(cmd)):
+            continue
+        if len(cmd) < 3 or cmd in ("end", "exit", "!") or cmd.lower() in seen:
+            continue
+        seen.add(cmd.lower())
+        out.append((ref, cmd))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("inputs", nargs="+", help=".pdf, .md, .markdown or .txt files")
@@ -293,14 +315,14 @@ def main():
         outline += [f'{"  " * (lvl - base)}- {t}  _({R(ex, ref)})_' for lvl, t, ref in ex.outline]
         terms += [f"- {t} _({', '.join(R(ex, r) for r in refs)})_" for t, refs in ex.terms.items()]
         caps += [f"- {R(ex, ref)}: {c}" for ref, c in ex.captions]
-        last = None
-        for ref, line in ex.code:
+        last, distinct = None, command_index(ex.code)
+        for ref, line in distinct:
             if ref != last:
                 code.append(f"\n## {R(ex, ref)}\n")
                 last = ref
             code.append(f"    {line}")
         summary[ex.name] = {"blocks": len(ex.text), "headings": len(ex.outline), "key_terms": len(ex.terms),
-                            "captions": len(ex.captions), "command_lines": len(ex.code)}
+                            "captions": len(ex.captions), "command_lines": len(ex.code), "distinct_commands": len(distinct)}
         if not ex.code:
             print(f"note: {ex.name}: no CLI/config lines found - commands may be in images or plain text; "
                   "read chapter.txt", file=sys.stderr)
@@ -310,7 +332,8 @@ def main():
     (out / "key-terms.md").write_text("# Emphasised terms in body text (concept candidates)\n\n"
                                       + "\n".join(terms) + "\n")
     (out / "captions.md").write_text("# Figure / table / example captions\n\n" + "\n".join(caps) + "\n")
-    (out / "commands.md").write_text("# CLI / config lines\n" + "\n".join(code) + "\n")
+    (out / "commands.md").write_text("# Distinct CLI / config commands (first appearance; full listings and output are in "
+                                     "chapter.txt)\n" + "\n".join(code) + "\n")
     (out / "summary.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
 

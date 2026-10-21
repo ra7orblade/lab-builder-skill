@@ -164,6 +164,9 @@ python3 scripts/labkit.py svg      LAB/topology/topology.yaml out.svg
 python3 scripts/labkit.py cml      LAB/topology/topology.yaml out.json
 python3 scripts/labkit.py lint     LAB/lab-guide.md
 
+# Coaching: print one step (3.2), Part (3), ticket (t1) or the challenge, with its hints and answer-key section
+python3 scripts/labkit.py lookup LAB 3.2
+
 # Render any lab Markdown file to PDF
 python3 scripts/md2pdf.py LAB/lab-guide.md --preview preview.png
 ```

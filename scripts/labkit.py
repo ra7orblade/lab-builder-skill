@@ -15,7 +15,8 @@ Subcommands (all also run by build)
   table    TOPO     Markdown addressing table (--links adds a link table)
   svg      TOPO OUT.svg
   cml      TOPO OUT.{yaml,json}  CML topology (schema 0.2.2); JSON is what an MCP import tool takes
-  lint     GUIDE.md [--lab DIR]  hint refs, images, answer boxes, solution leaks, placeholders
+  lint     GUIDE.md [--lab DIR]  hint refs, images, answer boxes, solution leaks, placeholders, time budget
+  lookup   LAB REF  coaching: one step (3.2), Part (3), ticket (t1) or challenge, with its hints and answer key
 
 Standard library + PyYAML (JSON topology files work without PyYAML).
 """
@@ -480,6 +481,23 @@ def scalar(v, indent):
     return json.dumps(v)  # JSON strings are valid YAML scalars
 
 
+COMMENT_LINE = re.compile(r"^(!( .*|=+)?|# .*|#=+)$")  # bare '#' is kept: it can close a banner
+
+
+def mcp_json(topo):
+    """JSON for an MCP import tool. The agent echoes every character as tool-call tokens, so: no
+    indentation, one node or link per line, and no comment-only lines in the embedded configs
+    (the YAML import file keeps them for people)."""
+    for n in topo["nodes"]:
+        if n["configuration"]:
+            n["configuration"] = "\n".join(l for l in n["configuration"].splitlines()
+                                           if not COMMENT_LINE.match(l.strip())) + "\n"
+    dump = lambda o: json.dumps(o, separators=(",", ":"), ensure_ascii=False)
+    rows = lambda key: ",\n".join(dump(x) for x in topo[key])
+    return ('{"lab":' + dump(topo["lab"]) + ',\n"nodes":[\n' + rows("nodes") + '],\n"links":[\n' + rows("links")
+            + '],\n"annotations":[\n' + rows("annotations") + "]}\n")
+
+
 def cmd_cml(a):
     t = load_topology(a.topology)
     nodedefs = {}
@@ -567,7 +585,7 @@ def cmd_cml(a):
             problems.append(f"cannot use lab {key}: {len(lab[key])} characters, CML allows {limit}")
     topo = {"lab": lab, "nodes": nodes, "links": links, "annotations": annotations}
     fmt = a.format or ("json" if a.out.endswith(".json") else "yaml")
-    Path(a.out).write_text(json.dumps(topo, indent=1) + "\n" if fmt == "json" else to_yaml(topo) + "\n")
+    Path(a.out).write_text(mcp_json(topo) if fmt == "json" else to_yaml(topo) + "\n")
     for p in problems:
         if not getattr(a, "quiet", False) or p.startswith("cannot"):
             print("WARN ", p)
@@ -1060,6 +1078,61 @@ def cmd_expand(a):
     return 1 if missing else 0
 
 
+# --------------------------------------------------------------------------- lookup (coaching mode)
+
+
+def section(text, head_re, level):
+    """From the first heading matching head_re to the next heading of the same or a higher level."""
+    m = re.search(head_re, text, re.M)
+    if not m:
+        return ""
+    nxt = re.search(rf"^#{{1,{level}}} ", text[m.end():], re.M)
+    return text[m.start():m.end() + (nxt.start() if nxt else len(text))]
+
+
+def tidy(s):
+    s = re.sub(r'^<div class="answer[^"]*"></div>\n?|^<!-- @?[\w -]*(-->)?\n?', "", s, flags=re.M)
+    return re.sub(r"\n{3,}", "\n\n", s).strip()
+
+
+def cmd_lookup(a):
+    """Print only what coaching one step needs: that step (with its Part's intro), its hints and the answer key."""
+    lab = lab_root(a.lab)
+    guide = (lab / "lab-guide.md").read_text()
+    kf = lab / "solutions" / "answer-key.md"
+    key = kf.read_text() if kf.exists() else ""
+    appendix = section(guide, r"^## Appendix A.*$", 2)
+    ref = a.ref.lower().replace(" ", "")
+    step = re.fullmatch(r"(\d+)(?:\.(\d+))?", ref)
+    ticket = None if step else re.fullmatch(r"(?:t|ticket)(\d+)|(challenge)", ref)
+    if step:
+        p, s = step[1], step[2]
+        part = g = section(guide, rf"^## Part {p}\b.*$", 2)
+        if s and part:
+            first = re.search(r"^### ", part, re.M)
+            g = (part[:first.start()] if first else "") + section(part, rf"^### Step {s}\b.*$", 3)
+        k = section(key, rf"^## Part {p}\b.*$", 2)
+        any_step = r"\d+"
+        title, pattern = f"Part {p}" + (f", Step {s}" if s else ""), rf"H{p}\.{s or any_step}[a-z]?"
+    elif ticket:
+        head, lvl = (rf"^### Ticket {ticket[1]}\b.*$", 3) if ticket[1] else (r"^## Part \d+: Challenge.*$", 2)
+        g, k = section(guide, head, lvl), section(key, head, lvl)
+        title = f"Ticket {ticket[1]}" if ticket[1] else "Challenge"
+        pattern = "|".join(sorted(set(re.findall(r"\bH\d+\.\d+[a-z]?\b", g)))) or "(?!)"
+    else:
+        sys.exit("lookup: give a step (3.2), a whole Part (3), a ticket (t1) or 'challenge'")
+    if not g:
+        heads = re.findall(r"^(## Part \d+:.*|### Ticket \d+.*)$", guide, re.M)
+        sys.exit(f"lookup: '{a.ref}' not found in lab-guide.md. It has:\n  " + "\n  ".join(heads))
+    hint_text = "\n\n".join(tidy(m[0]) for m in
+                            re.finditer(rf"^#{{2,4}}\s*(?:{pattern})\b.*?(?=^#|\Z)", appendix, re.M | re.S))
+    print(f"=== Guide: {title} ===\n{tidy(g)}\n")
+    print(f"=== Hints ===\n{hint_text or '(none)'}\n")
+    key_title = title.split(",")[0]  # the answer key is organised per Part, not per step
+    print(f"=== Answer key: {key_title} (for you, not to paste: tutoring.md §6) ===\n{tidy(k) or '(not found)'}")
+    return 0
+
+
 # --------------------------------------------------------------------------- build (one-shot)
 
 
@@ -1148,6 +1221,9 @@ def main():
     p = sub.add_parser("assemble"); p.add_argument("lab"); p.set_defaults(fn=cmd_assemble)
     p = sub.add_parser("tickets"); p.add_argument("lab"); p.set_defaults(fn=cmd_tickets)
     p = sub.add_parser("expand"); p.add_argument("file"); p.set_defaults(fn=cmd_expand)
+    p = sub.add_parser("lookup", help="coaching: print one step/ticket, its hints and its answer-key section")
+    p.add_argument("lab"); p.add_argument("ref", help="3.2 (step), 3 (Part), t1 (ticket) or challenge")
+    p.set_defaults(fn=cmd_lookup)
     p = sub.add_parser("build"); p.add_argument("lab")
     p.add_argument("--pdf", action="store_true", help="also render guide + answer key PDFs and previews")
     p.add_argument("--force-configs", action="store_true", help="regenerate hand-written initial configs too")

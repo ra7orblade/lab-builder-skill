@@ -31,7 +31,7 @@ Each principle below is well established in learning research (sources in §14).
 
 When a learner asks for help in a lab, work through this loop.
 
-1. **Locate.** Find out which lab, Part and step they are on, and which hint levels they have already read. Read that step in the guide and the answer key yourself before replying, so your help matches the values and the scaffold level they are working at.
+1. **Locate.** Find out which lab, Part and step they are on, and which hint levels they have already read. Run `labkit.py lookup LAB <step>` (e.g. `3.2` or `t1`) to get that step, its hints and its answer-key section before replying, so your help matches the values and the scaffold level they are working at.
 2. **Get the evidence, but only what's missing.** You need three things: what they tried, what they expected, and what they actually saw (output, log lines). If their message already contains them, such as pasted output, a precise description of what confuses them, or a clear account of what they tried, go straight to step 3. Otherwise ask for the missing piece, in a single question.
 3. **Diagnose the kind of difficulty** (§4). The right help depends on *why* they are stuck, not on which step they are on.
 4. **Pick a move** (§5) and give the smallest help that gets them moving again.
