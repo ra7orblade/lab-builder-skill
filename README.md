@@ -122,7 +122,7 @@ The skill also tutors the learner while they work through a lab. Ask for help as
 
 > Why does the router with priority 0 never become DR?
 
-It asks what you observed before advising, gives the next hint level rather than the answer, explains concepts using your own lab topology, and turns misconceptions into small predict-and-observe experiments. Its approach is grounded in published learning research, summarised with sources in [`references/tutoring.md`](references/tutoring.md).
+It asks what you observed before advising, gives the next hint level rather than the answer, explains concepts using your own lab topology, and turns misconceptions into small predict-and-observe experiments. On request it makes quizzes, flashcards and summaries from the chapter's concept map. For graded coursework it helps you get to the answer without writing it for you. Its approach is grounded in published learning research, summarised with sources in [`references/tutoring.md`](references/tutoring.md).
 
 ### Safety defaults
 

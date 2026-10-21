@@ -2,7 +2,7 @@
 name: lab-builder-skill
 description: |
   Build a complete, learner-centred hands-on lab from a textbook chapter (PDF, Markdown or text): concept inventory, topology diagram, addressing table, baseline configs, a fillable lab guide (.md + .pdf) that teaches through tasks, predictions and graded hints instead of copy-paste commands, troubleshooting tickets and a separate answer key. Netacad-style structure, but vendor- and technology-neutral. Optionally builds the initial, unconfigured lab in Cisco Modeling Labs or GNS3 through an MCP server, and validates it there on request.
-  Use when the user gives a chapter and asks for a lab, lab guide, practice lab, hands-on exercises or lab topology for it, or asks to build that chapter's lab in CML/GNS3/an emulator. Also use when a learner working through such a lab asks for help, a hint, or an explanation of one of its concepts (coaching mode).
+  Use when the user gives a chapter and asks for a lab, lab guide, practice lab, hands-on exercises or lab topology for it, or asks to build that chapter's lab in CML/GNS3/an emulator. Also use when a learner working through such a lab asks for help, a hint, an explanation of one of its concepts, or study material for it (coaching mode).
   Do not use for general questions unrelated to a chapter or lab.
 ---
 
@@ -129,7 +129,7 @@ Don't paste the guide. Don't keep `_work/` in the delivered folder, unless the u
 
 ## Coaching mode
 
-When a learner asks for help, a hint or an explanation while working through a lab (rather than asking you to build one), skip the workflow above:
+When a learner asks for help, a hint, an explanation or study material (quiz, flashcards, summary) while working through a lab (rather than asking you to build one), skip the workflow above:
 
 1. Load `references/tutoring.md` and follow its tutoring loop.
 2. Find the lab folder. Read the relevant step in `lab-guide.md`, its hint in Appendix A, and the matching part of `solutions/answer-key.md`, so your help matches the lab's values and scaffold level.

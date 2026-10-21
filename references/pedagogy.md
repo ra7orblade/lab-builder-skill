@@ -18,13 +18,13 @@
 9. **Concept text is in your own words**, citing the book section. Never copy long passages.
 10. **Don't over-question or over-decorate.** Callout labels signal the type of thinking; use them only where it applies.
 
-These rules apply well-established learning research. `tutoring.md` explains each principle and gives its sources. The goal is not for the learner to *finish* the lab. The goal is that afterwards they can configure, verify and fix the technology **without the guide**. A guide that hands over every command produces someone who can paste. A guide that only asks questions produces someone who gives up. The work happens in between.
+These rules apply well-established learning research. `tutoring.md` explains each principle and gives its sources. The goal is not for the learner to *finish* the lab. The goal is that afterwards they can configure, verify and fix the technology **without the guide**. Printing every command trains copying, and withholding all support leaves the learner stuck. Aim for the level of support at which they still have to think, but can still make progress.
 
 ## 1. Diagnose before you teach
 
 - **Readiness Check** (start of the guide): 3–6 questions on the prerequisite and core theory, each pointing to a book section. They are written answers, not trivia. "Explain why …" and "What decides …" beat "Name the …".
 - **In conversation:** if you don't know the learner's level, ask once when building the lab (see SKILL.md intake). Their answer sets the starting scaffold level (section 2).
-- Fluent, expert phrasing in the request sets the *level*. It does not mean "skip the learning design".
+- Expert vocabulary in a request tells you how advanced to pitch the lab. It doesn't mean the learning design can be skipped.
 
 ## 2. Fading scaffolds
 
@@ -40,9 +40,9 @@ Each Part sits on one level. Levels only go down as the lab goes on.
 
 Calibrate to the learner: beginners get two L1 Parts, and experienced learners start at L2. Use the Netacad "Repeat on D2" move as fading within a Part. One device is done in full, the next on the learner's own.
 
-## 3. One step forward, every step
+## 3. Anatomy of a step
 
-Every Step carries **one** focused thinking prompt plus the scaffold for it. Never a wall of questions, and never a bare command list. A Step has:
+Each Step asks for **one** piece of thinking and provides what the learner needs to do it. Avoid both stacks of questions and bare command lists. A Step has:
 
 1. **Concept** (optional if covered by the Part's concept): why this exists, 2–6 sentences, citing the book section.
 2. **Predict**: before acting, what do you expect to see, change or break? This is where misconceptions surface. Use it on every step whose outcome isn't obvious.
@@ -96,7 +96,7 @@ Every mechanism that has a failure mode described in the book, such as mismatche
 ## 7. Showing, not just telling
 
 - One **topology diagram**, accurate and labelled, is mandatory.
-- Add a small extra diagram (SVG, a table, or an ASCII sketch in a code block) only when a concept has *shape*: a state machine, a packet exchange, a decision order such as BGP best-path or a router-ID selection order. Show one relationship and let a question ask for what is missing. A fully annotated diagram of the whole mechanism is the answer dressed up.
+- Add a small extra diagram (SVG, a table, or an ASCII sketch in a code block) only when a concept has *shape*: a state machine, a packet exchange, a decision order such as BGP best-path or a router-ID selection order. Show one relationship and let a question ask for what is missing. A diagram that already shows the whole mechanism gives away what the question was meant to make the learner work out.
 - Tables beat paragraphs for comparisons such as method A vs B, or timer defaults per network type.
 
 ## 8. Sample output and honesty
@@ -105,10 +105,10 @@ Every mechanism that has a failure mode described in the book, such as mismatche
 - Only include output you are confident matches the chosen platform. If you are not sure of the exact format, describe the expected state in words ("both neighbours should be FULL; R1 should be DR") instead of inventing output. Real captured output (from an emulator validation run) beats remembered output. Say which it is in Platform Notes.
 - Every value in the guide must be checked: wildcards, masks, AS paths, timers, priorities, key strings and interface names must match the topology and configs exactly. `labkit.py validate` checks addressing, and you check the rest.
 
-## 9. What consistently goes wrong (do not do these)
+## 9. Common mistakes to avoid
 
 - **Cookbook drift:** writing "configure `<exact command>`" because it's easier. Every task describes an outcome.
-- **Hidden answers in hints:** "Hint: use `network 10.10.0.0 0.0.0.7 area 0`" is the answer with extra steps.
+- **Hints that contain the answer:** "Hint: use `network 10.10.0.0 0.0.0.7 area 0`" is the solution, just slower to read.
 - **Over-questioning:** three questions per step makes learners skip them all. Use one, and make it count.
 - **Decoration:** callouts, diagrams and bold text on everything. The labels exist so learners know *what kind of thinking* is asked. Overuse kills the signal.
 - **Untestable content:** a "theoretical" section means the topology is wrong. Change the topology, or turn it into a reflection question tied to something observable.
@@ -121,7 +121,7 @@ Follow `tutoring.md`, the complete tutoring guide. In short:
 
 - Ask what they observed (outputs, logs) before suggesting anything.
 - Offer the next unused hint level, not the answer.
-- If they're genuinely stuck, give a foothold: do the first part with your reasoning narrated, then hand it back.
+- If they're genuinely stuck, give them a starting point: do the first part yourself, explaining your reasoning as you go, then let them carry on.
 - Point to the answer key only after they have a working result or have used every hint level. Then ask what differs from their solution, and why.
 
 ## 11. Worked transformation (Netacad step → this skill's step)
