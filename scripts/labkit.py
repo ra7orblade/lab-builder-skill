@@ -684,12 +684,125 @@ def time_issues(text, depth):
     return issues
 
 
+# --------------------------------------------------------------------------- quality gates (any model)
+
+VAGUE_RE = re.compile(r"\b(verify (that )?it works|make sure (it|that it) works|works (correctly|properly|as expected)|"
+                      r"is working|everything works)\b", re.I)
+MIN_TICKETS = {"low": 1, "medium": 2, "high": 2, "max": 2}
+IF_RE = re.compile(r"\b(TenGigabitEthernet|GigabitEthernet|FastEthernet|Ethernet|Serial|Loopback|Tunnel|Port-channel|"
+                   r"Te|Gi|Fa|Et|Se|Lo|Tu|Po)\s?(\d+(?:/\d+)*)\b")
+IF_CANON = {"te": "tengigabitethernet", "gi": "gigabitethernet", "fa": "fastethernet", "et": "ethernet", "e": "ethernet",
+            "se": "serial", "s": "serial", "lo": "loopback", "tu": "tunnel", "po": "port-channel"}
+
+
+def canon_if(name):
+    m = re.match(r"^\s*([a-z-]+)\s*([\d/.:]+)\s*$", name.lower())
+    return (IF_CANON.get(m[1], m[1]) + m[2]) if m else name.lower()
+
+
+def structure_issues(text, lab, depth):
+    """Structural rules from the pedagogy rules card that a script can check."""
+    issues = []
+    for head, _, _, body in time_sections(text):
+        m = re.match(r"Part (\d+):", head)
+        if not m or m[1] == "1" or "### Step" not in body or re.search(r"ticket|challenge", head, re.I):
+            continue
+        for label, pat in (("Predict", r"Predict"), ("Question", r"(Question|Explain|Reflect)"), ("Checkpoint", r"Checkpoint")):
+            if not re.search(rf"^>\s*\*\*{pat}", body, re.M):
+                issues.append(f"'{head[:50]}' has no {label} callout (rules card 3-4)")
+    for m in re.finditer(r"^>\s*\*\*Checkpoint:\*\*(.*)$", text, re.M):
+        if VAGUE_RE.search(m[1]):
+            issues.append(f"vague checkpoint, make it binary and observable: {m[1].strip()[:70]!r}")
+    appendix = section(text, r"^## Appendix A.*$", 2)
+    for h, body in re.findall(r"^#{3,4}\s*(H\d+\.\d+[a-z]?)\b(.*?)(?=^#|\Z)", appendix, re.M | re.S):
+        missing = [str(k) for k in (1, 2, 3) if not re.search(rf"Level {k}\b", body)]
+        if missing:
+            issues.append(f"hint {h} lacks level(s) {', '.join(missing)}: every hint has three levels")
+    key_f = lab / "solutions" / "answer-key.md"
+    key = key_f.read_text() if key_f.exists() else ""
+    in_guide = set(re.findall(r"^### Ticket (\d+)", text, re.M))
+    in_dirs = {p.name[7:] for p in (lab / "solutions" / "tickets").glob("ticket-*") if p.is_dir()}
+    for n in sorted(in_guide ^ in_dirs):
+        issues.append(f"ticket {n} is " + ("in the guide but has no solutions/tickets/ticket-" + n if n in in_guide
+                                          else "in solutions/tickets but not in the guide (### Ticket " + n + ")"))
+    if key:
+        for n in sorted(in_guide - set(re.findall(r"^### Ticket (\d+)", key, re.M))):
+            issues.append(f"ticket {n} has no '### Ticket {n}' section in the answer key")
+        for n in sorted(set(re.findall(r"^## Part (\d+)", text, re.M)) - set(re.findall(r"^## Part (\d+)", key, re.M)), key=int):
+            issues.append(f"Part {n} has no '## Part {n}' section in the answer key")
+    if depth in MIN_TICKETS:
+        if len(in_guide) < MIN_TICKETS[depth]:
+            issues.append(f"{len(in_guide)} ticket(s): depth {depth} needs at least {MIN_TICKETS[depth]} (depth-and-time.md §1)")
+        rc = section(text, r"^## .*Readiness Check.*$", 2)
+        if len(re.findall(r"^\d+\.\s", rc, re.M)) < 3:
+            issues.append("the Readiness Check needs at least 3 numbered questions")
+        cmap = next((p for p in (lab / "concept-map.md", lab.parent / "concept-map.md") if p.exists()), None)
+        if not cmap:
+            issues.append("no concept-map.md in the lab folder or its parent")
+        elif not re.search(r"^## Time plan", cmap.read_text(), re.M):
+            issues.append(f"{cmap.name} has no '## Time plan' section (depth-and-time.md §6)")
+    return issues
+
+
+def lab_values(lab):
+    """Addresses, networks and interface names the lab actually uses: topology plus every config."""
+    t = load_topology(topo_file(lab))
+    ips, nets, ifs = set(), [], set()
+    for n in t["nodes"]:
+        for i in n["interfaces"]:
+            ifs.add(canon_if(i["name"]))
+            for s in i["ipv4"] + i["ipv6"]:
+                ip = addr(s)
+                ips.add(str(ip.ip))
+                nets.append(ip.network)
+    conf = ""
+    for d in ("initial-configs", "solutions", "troubleshooting"):
+        for p in (lab / d).rglob("*"):
+            if p.is_file() and p.suffix in (".cfg", ".delta", ".sh", ".txt", ".conf"):
+                conf += p.read_text(errors="ignore").lower() + "\n"
+    ifs |= {canon_if(m[1] + m[2]) for m in re.finditer(IF_RE.pattern, conf, re.I)} | \
+           {canon_if(x) for x in re.findall(r"^\s*interface\s+(\S+)", conf, re.M)}
+    return ips, nets, ifs, conf
+
+
+def review_items(text, lab):
+    """Values worth a second look: not failures (break-it steps use wrong values on purpose), but
+    every one should be checked against topology.yaml and the configs."""
+    if not topo_file(lab).exists():
+        return []
+    ips, nets, ifs, conf = lab_values(lab)
+    key_f = lab / "solutions" / "answer-key.md"
+    body = re.sub(r"<!-- @[^>]*-->.*?<!-- @end -->", "", text + "\n" + (key_f.read_text() if key_f.exists() else ""), flags=re.S)
+    items = []
+    v4 = re.findall(r"\b\d{1,3}(?:\.\d{1,3}){3}(?:/\d{1,2})?\b", body)
+    v6 = re.findall(r"(?<![\w:])[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{0,4}){2,7}(?:/\d{1,3})?", body)
+    for tok in sorted(set(v4) | {x for x in v6 if "::" in x or x.count(":") == 7}):
+        try:
+            ip = ipaddress.ip_interface(tok)
+        except ValueError:
+            continue
+        a = ip.ip
+        if a.is_multicast or a.is_unspecified or a.is_link_local or str(a).startswith(("255.", "0.")) \
+                or str(a) in ips or str(a) in conf:
+            continue
+        if any(ip.network.version == n.version and (a in n or n.subnet_of(ip.network)) for n in nets):
+            continue
+        items.append(f"address {tok} is not in topology.yaml or any config: intended, or a typo?")
+    for m in sorted({m.group(0) for m in IF_RE.finditer(body)}):
+        if canon_if(m) not in ifs and "/" in m:
+            items.append(f"interface {m} doesn't exist in this lab: intended (e.g. the book's name), or a typo?")
+    return items
+
+
 def cmd_lint(a):
     guide = Path(a.guide)
     text = guide.read_text()
     lab = Path(a.lab) if a.lab else guide.parent
     issues = []
     depth = lab_depth(lab)
+    issues += structure_issues(text, lab, depth)
+    for item in review_items(text, lab):
+        print("CHECK", item)
     if depth:
         issues += time_issues(text, depth)
         _, req, extra, _ = time_totals(text)
@@ -1177,6 +1290,10 @@ def cmd_build(a):
         r, out = quiet(cmd_lint, argparse.Namespace(guide=str(guide), lab=str(lab)))
         issues = [l for l in out.splitlines() if l.startswith("LINT")]
         print("".join("time: " + l[6:] + "\n" for l in out.splitlines() if l.startswith("TIME")), end="")
+        checks = [l[6:] for l in out.splitlines() if l.startswith("CHECK")]
+        if checks:
+            print(f"check: {len(checks)} value(s) to verify against topology.yaml and the configs (not errors):"
+                  + "".join("\n  " + c for c in checks[:20]))
         print(f"lint: {len(issues)} issue(s)" + ("".join("\n  " + l[6:] for l in issues[:15])))
         rc |= r
     if a.pdf:

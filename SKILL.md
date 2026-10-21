@@ -30,6 +30,20 @@ You turn a book chapter into a lab the learner **builds themselves**. Netacad-st
 - Never push solution, checkpoint or ticket configs into the learner's emulator lab unless the user approved testing. In that case, revert the lab to the baseline afterwards.
 - Never delete or wipe an existing emulator lab or node without explicit confirmation.
 
+## Operating rules (for every model)
+
+These rules make the output independent of which model runs the skill. Follow them literally.
+
+- **Work through the steps in order.** Don't skip a mandatory reference: `depth-and-time.md` (steps 0-3), `concept-extraction.md` (steps 1-2), the rules card in `pedagogy.md`, and `example-lab.md` (before step 6).
+- **Values come from files, never from memory.** Copy every address, interface name, AS number, key and timer from `topology.yaml` and the deltas.
+- **One document at a time, each checked before the next:** `concept-map.md`, then `topology.yaml` and the deltas, then build; the guide, then build; the answer key, then build. Fix every `lint` issue before you move on. Resolve every `check:` line: fix the value, or confirm it's intended (e.g. a deliberately wrong value in a Break it) and say so in your report.
+- **Never invent device output.** If you didn't capture it on a device, describe the expected state in words, or mark the output as representative in Platform Notes.
+- **Match the example.** `example-lab.md` shows the expected detail and precision of every artifact. If your text is vaguer, shorter on reasoning, or gives away more than the example does, revise it.
+- **When something is ambiguous, take the default** from the tables in the references, and state the assumption in your report. Don't stop to ask unless the hard rules require it.
+- **If your context gets long, `concept-map.md` is your memory.** Re-read it, not the chapter.
+
+The agent needs to read and write files and run Python 3. For a 30-40 page chapter, plan on a context window of at least 100k tokens.
+
 ## Workflow
 
 ### 0. Intake: one round of questions, only for what is missing
@@ -86,7 +100,7 @@ This generates initial configs from the platform profiles, validates, and assemb
 
 ### 6. Write the guide and the answer key
 
-Copy `assets/lab-guide-template.md` → `LAB/lab-guide.md` and `assets/answer-key-template.md` → `LAB/solutions/answer-key.md`. Fill every `{{placeholder}}`. Keep the markers:
+First read `references/example-lab.md`: it shows the expected quality of the guide, the hints and the answer key. Then copy `assets/lab-guide-template.md` → `LAB/lab-guide.md` and `assets/answer-key-template.md` → `LAB/solutions/answer-key.md`. Fill every `{{placeholder}}`. Keep the markers:
 
 | Marker | Fills in |
 |---|---|
@@ -112,9 +126,13 @@ python3 SKILL_DIR/scripts/labkit.py build LAB --pdf     # must end with "lint: 0
 
 If the PDF line says the answer fields are "NOT fillable", pypdf is missing. Tell the user, and offer to install it (ask first, per the hard rules).
 
+`lint` checks the structure: Predict, Question and Checkpoint callouts per Part, three-level hints, vague checkpoints, tickets consistent across guide, configs and answer key, answer-key coverage of every Part, the time budget, and solution leaks. Its `check:` lines list addresses and interface names that don't exist in the lab. Resolve each one.
+
 Then read `LAB/_work/preview-guide.png`, one image, and fix anything visibly broken. The checklist that `lint` cannot do for you:
 
 - concept-map coverage, and the time plan matches the guide
+- every task, checkpoint, hint and answer is at least as precise as `example-lab.md`
+- no Predict is answered by output shown before it
 - every value correct (masks, wildcards, AS numbers, keys, interface names)
 - scaffolding fades
 - each ticket has one fault and a realistic symptom
@@ -152,6 +170,7 @@ When a learner asks for help, a hint, an explanation or study material (quiz, fl
 |---|---|
 | `references/tutoring.md` | Coaching mode; also when you need the reasoning behind a pedagogy rule |
 | `references/depth-and-time.md` | Steps 0-3 and 6: depth levels, tiers, time costs, time savers. Mandatory for every new lab |
+| `references/example-lab.md` | Step 6, before writing the guide and answer key. Mandatory: the quality bar for every artifact |
 | `references/pedagogy.md` | Writing the guide. The rules card at the top is mandatory; the rest only when unsure |
 | `references/concept-extraction.md` | Steps 1-2, if this is your first lab with the skill |
 | `references/topology-and-configs.md` | Step 3-4: schema, markers, deltas, platform profiles |
