@@ -24,6 +24,7 @@
 ```yaml
 lab:
   title: "Course ChN - Topic - Suffix"     # CML maximum: 64 characters
+  depth: medium                            # low | medium | high | max: sets the time budget (depth-and-time.md)
   short_title: "ChN - Topic"               # used for ticket lab titles (+ " - Ticket N")
   description: "..."                       # CML lab description (max 4096)
   notes: |                                  # CML lab notes (max 32768): how to start, what is missing
@@ -108,6 +109,7 @@ The marker line stays in the file; the generated content follows it, ending with
 <!-- @include skill:snippets/how-to-use.md -->   (or a path relative to the lab root)
 <!-- @deltas part=2 -->              <!-- @ticket 1 -->   <!-- @ticket challenge -->
 <!-- @code solutions/final-configs/R1.cfg text -->
+<!-- @time -->                     (estimated time from lab-guide.md's "(N min)" headings)
 ```
 
 Snippets shipped in `assets/snippets/`: `readiness-intro`, `how-to-use`, `ticket-method`, `ticket-worksheet`, `command-reference`, `hint-intro`, `answer-key-intro`.

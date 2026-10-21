@@ -10,6 +10,8 @@ description: |
 
 You turn a book chapter into a lab the learner **builds themselves**. Netacad-style structure (`references/lab-anatomy.md`) plus established learning principles (`references/tutoring.md`): diagnose first, tasks instead of commands, predict before acting and explain after, fading scaffolds, graded hints, real troubleshooting. Answers live in a separate answer key.
 
+**The learner's time is the budget.** Every lab fits the time budget of the depth level the user picks (`references/depth-and-time.md`). A lab that overruns its estimate is a defect, not extra value.
+
 `SKILL_DIR` means this skill's folder. `LAB` means the output lab folder. Scripts need Python 3 + PyYAML, plus poppler-utils for PDF input and Chromium (or WeasyPrint) for PDFs. pypdf makes the PDF answer boxes fillable; without it they are drawn only.
 
 ## Token budget rules (read first)
@@ -32,12 +34,17 @@ You turn a book chapter into a lab the learner **builds themselves**. Netacad-st
 
 ### 0. Intake: one round of questions, only for what is missing
 
-Ask everything in a single message. Use your environment's structured-question tool if it has one.
+Ask everything in a single message. Use your environment's structured-question tool if it has one. Always ask question 1 unless the user already stated a depth. Ask the others only if they are missing.
 
-1. **Output folder.** Propose one, e.g. next to the course's other labs. It must be inside the working directory, or the user must confirm it.
-2. **Platform and images.** Default to what the book teaches; lightweight emulator images where possible.
-3. **Emulator build:** files only (default), CML via MCP, or GNS3 via MCP.
-4. **Test the lab on the emulator before final delivery?** No (default) / Yes. Ask only if there will be an emulator build.
+1. **Depth level**, which sets the time budget per lab:
+   - **1 Low:** about 45–60 min, core concepts only.
+   - **2 Medium (default):** about 1.5 h, sometimes a bit longer. The whole chapter, one short deep dive, and at most one small, useful extra from outside the input.
+   - **3 High:** about 3 h, with alternatives compared, more experiments, and 1–2 Beyond the Book items.
+   - **4 Max:** the deepest treatment, with useful content not found in the input, but kept on the chapter's certification track. Each lab up to about 4 h; split into a series beyond that.
+2. **Output folder.** Propose one, e.g. next to the course's other labs. It must be inside the working directory, or the user must confirm it.
+3. **Platform and images.** Default to what the book teaches; lightweight emulator images where possible.
+4. **Emulator build:** files only (default), CML via MCP, or GNS3 via MCP.
+5. **Test the lab on the emulator before final delivery?** No (default) / Yes. Ask only if there will be an emulator build.
 
 The learner's level sets the starting scaffold. Assume the course level unless the user says otherwise.
 
@@ -51,11 +58,11 @@ Read `outline.md`, then `chapter.txt` once, in large chunks, with `commands.md` 
 
 ### 2. Concept inventory → `LAB/concept-map.md`
 
-One row per concept: kind (CONFIG, MECH, VERIFY, FAILURE, THEORY, DESIGN, LIMIT), treatment, and location. Pick 1-2 "Beyond the Book" items. Decide whether the chapter needs one lab or several. Close with a coverage summary. See concept-extraction §2-5.
+One row per concept: kind (CONFIG, MECH, VERIFY, FAILURE, THEORY, DESIGN, LIMIT), tier (Core, Support, Extra), treatment, and location. The depth level decides what each tier gets: a step, a 2-minute question, or deferred (`references/depth-and-time.md` §3). Pick the deep dives and Beyond the Book items the level allows; each must pass the track test (§2). Decide whether the chapter needs one lab or several. Close with a coverage summary that lists deferred concepts, then a `## Time plan`: Part, content, minutes, totalling at or under the level's target (depth-and-time §6). Apply the time savers (§4) before cutting content, and split before exceeding the cap. See concept-extraction §2-5.
 
 ### 3. Design → `LAB/topology/topology.yaml`
 
-Use the smallest topology that makes every MECH observable and every CONFIG testable. The schema covers platform profiles, interface `extra:` lines, host `gateway:`, `included` / `not_included`, `short_title` and `checkpoints`; see `references/topology-and-configs.md`. Assign each Part a scaffold level (pedagogy §2).
+Use the smallest topology that makes every MECH observable and every CONFIG testable. The schema covers platform profiles, interface `extra:` lines, host `gateway:`, `included` / `not_included`, `short_title` and `checkpoints`; see `references/topology-and-configs.md`. Set `lab.depth`. Assign each Part a scaffold level (pedagogy §2).
 
 ### 4. Solutions as deltas
 
@@ -67,7 +74,7 @@ LAB/solutions/tickets/ticket-<N>/<dev>.delta    the single fault (appended to th
 LAB/solutions/tickets/challenge/<dev>.delta     optional multi-fault challenge
 ```
 
-Make 2-4 tickets, each a different kind of fault. Use a symptom-first design: prefer faults that cause *suboptimal* behaviour as well as outages.
+Make the number of tickets the depth level sets (depth-and-time §1), each a different kind of fault. Use a symptom-first design: prefer faults that cause *suboptimal* behaviour as well as outages.
 
 ### 5. Build
 
@@ -84,11 +91,14 @@ Copy `assets/lab-guide-template.md` → `LAB/lab-guide.md` and `assets/answer-ke
 | Marker | Fills in |
 |---|---|
 | `<!-- @objectives -->` | Part list, from the `## Part N:` headings |
+| `<!-- @time -->` | estimated total time and depth, from the `(N min)` headings |
 | `<!-- @table addressing -->` | addressing table |
 | `<!-- @include skill:snippets/<x>.md -->` | standard sections (how-to-use, ticket method, worksheets, command reference, ...) |
 | `<!-- @deltas part=N -->` | answer key: every device's configuration for Part N |
 | `<!-- @ticket N -->` / `<!-- @ticket challenge -->` | answer key: the injected fault lines |
 | `<!-- @code PATH [lang] -->` | any file as a code block |
+
+Every learner-facing heading (Readiness Check, each Part, Reflection Questions) ends with its time estimate from the time plan, e.g. `(20 min)`, or `(optional, 25 min)` for an extra outside the budget. `<!-- @time -->` then shows the total.
 
 Writing rules: follow the pedagogy rules card. Tasks give the outcome and the values, never the commands. Each step has one thinking prompt. Show no output that answers a later question. Hints go in Appendix A, three levels each.
 
@@ -97,14 +107,14 @@ Copy `assets/lab-readme-template.md` → `LAB/README.md` and fill it in.
 ### 7. Quality gate + render
 
 ```bash
-python3 SKILL_DIR/scripts/labkit.py build LAB --pdf     # must end with "lint: 0 issue(s)" and "build: OK"
+python3 SKILL_DIR/scripts/labkit.py build LAB --pdf     # must end with "lint: 0 issue(s)" and "build: OK"; "time:" shows the total vs. the budget
 ```
 
 If the PDF line says the answer fields are "NOT fillable", pypdf is missing. Tell the user, and offer to install it (ask first, per the hard rules).
 
 Then read `LAB/_work/preview-guide.png`, one image, and fix anything visibly broken. The checklist that `lint` cannot do for you:
 
-- concept-map coverage
+- concept-map coverage, and the time plan matches the guide
 - every value correct (masks, wildcards, AS numbers, keys, interface names)
 - scaffolding fades
 - each ticket has one fault and a realistic symptom
@@ -121,6 +131,7 @@ Follow `references/emulators.md`. For CML: check for name collisions with `get_c
 Report briefly:
 
 - the folder, and the labs with their Part titles
+- the depth level and the estimated time of each lab, plus what a higher depth would add (the deferred concepts)
 - coverage numbers
 - the emulator lab name and ID, or how to import it
 - what was and was not validated
@@ -140,6 +151,7 @@ When a learner asks for help, a hint, an explanation or study material (quiz, fl
 | File | Load when |
 |---|---|
 | `references/tutoring.md` | Coaching mode; also when you need the reasoning behind a pedagogy rule |
+| `references/depth-and-time.md` | Steps 0-3 and 6: depth levels, tiers, time costs, time savers. Mandatory for every new lab |
 | `references/pedagogy.md` | Writing the guide. The rules card at the top is mandatory; the rest only when unsure |
 | `references/concept-extraction.md` | Steps 1-2, if this is your first lab with the skill |
 | `references/topology-and-configs.md` | Step 3-4: schema, markers, deltas, platform profiles |

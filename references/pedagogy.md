@@ -13,7 +13,7 @@
 4. **Checkpoints are binary and observable**, e.g. "R1 lists 2 neighbors in FULL", never "verify it works".
 5. **Never show output that answers a later question.** Show output only if it was validated or is certain. Otherwise describe the expected state in words.
 6. **Every L1-L3 task gets a hint `H<part>.<step>`** with three levels: nudge, narrow, generic pattern. A hint never contains the lab's values as a working line.
-7. **Every failure mode from the book becomes a Break it** (predict, change, observe, explain, restore) **or a ticket.** Tickets: 2-4 per lab, one fault each, each a different kind of fault.
+7. **Every failure mode the depth level includes becomes a Break it** (predict, change, observe, explain, restore) **or a ticket.** Tickets: the number the depth level sets (`depth-and-time.md` §1), one fault each, each a different kind of fault.
 8. **Questions must be answerable from lab evidence plus the book.** Recall questions go in the Readiness Check.
 9. **Concept text is in your own words**, citing the book section. Never copy long passages.
 10. **Don't over-question or over-decorate.** Callout labels signal the type of thinking; use them only where it applies.
@@ -22,7 +22,7 @@ These rules apply well-established learning research. `tutoring.md` explains eac
 
 ## 1. Diagnose before you teach
 
-- **Readiness Check** (start of the guide): 3–6 questions on the prerequisite and core theory, each pointing to a book section. They are written answers, not trivia. "Explain why …" and "What decides …" beat "Name the …".
+- **Readiness Check** (start of the guide): 3–6 questions, as the depth level sets, on the prerequisite and core theory, each pointing to a book section. They are written answers, not trivia. "Explain why …" and "What decides …" beat "Name the …".
 - **In conversation:** if you don't know the learner's level, ask once when building the lab (see SKILL.md intake). Their answer sets the starting scaffold level (section 2).
 - Expert vocabulary in a request tells you how advanced to pitch the lab. It doesn't mean the learning design can be skipped.
 
@@ -83,7 +83,7 @@ Every Task in L1–L3 Parts, and every ticket, has a hint ID (`H<part>.<step>[le
 
 ## 6. Break it, then fix it
 
-Every mechanism that has a failure mode described in the book, such as mismatches, missing prerequisites or ordering problems, gets a **Break it** experiment:
+Every mechanism the depth level includes that has a failure mode described in the book, such as mismatches, missing prerequisites or ordering problems, gets a **Break it** experiment, unless a ticket already covers it:
 
 1. Predict the symptom (in writing).
 2. Make the specific change.
@@ -91,7 +91,7 @@ Every mechanism that has a failure mode described in the book, such as mismatche
 4. Explain the gap between the prediction and what happened.
 5. Restore, and verify the restore.
 
-**Troubleshooting Tickets** go further. The fault is unknown, the learner gets only a symptom, and they must isolate it. Use 2–4 tickets per lab, each a different *kind* of fault: parameter mismatch, missing statement, wrong value or scope, feature interaction, underlay problem. A ticket's config is the full working end-state with **one** fault buried in it, so reading it does not trivially reveal the fault. Even so, the guide tells the learner to load it blind.
+**Troubleshooting Tickets** go further. The fault is unknown, the learner gets only a symptom, and they must isolate it. Use the number of tickets the depth level sets (`depth-and-time.md` §1), each a different *kind* of fault: parameter mismatch, missing statement, wrong value or scope, feature interaction, underlay problem. A ticket's config is the full working end-state with **one** fault buried in it, so reading it does not trivially reveal the fault. Even so, the guide tells the learner to load it blind.
 
 ## 7. Showing, not just telling
 
@@ -113,7 +113,7 @@ Every mechanism that has a failure mode described in the book, such as mismatche
 - **Decoration:** callouts, diagrams and bold text on everything. The labels exist so learners know *what kind of thinking* is asked. Overuse kills the signal.
 - **Untestable content:** a "theoretical" section means the topology is wrong. Change the topology, or turn it into a reflection question tied to something observable.
 - **False precision:** invented outputs, version-specific claims you haven't verified, or commands from another platform family.
-- **Endless lab:** match the depth to the chapter, plus one step further. Do not add every feature you know.
+- **Endless lab:** stay inside the depth level's time budget (`depth-and-time.md`). Do not add every feature you know. The learner's time is the scarcest resource in the lab.
 
 ## 10. When the learner comes back for help
 

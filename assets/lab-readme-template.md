@@ -2,6 +2,8 @@
 
 A hands-on lab for **{{Book}}, Chapter {{N}}: {{Chapter title}}**, built for {{platform/images}} on {{emulator or physical}}.
 
+<!-- @time -->
+
 ## Start here
 
 1. Open `lab-guide.pdf` (or `lab-guide.md`). The answer boxes and worksheets in the PDF are fillable, so you can type your answers in any PDF reader on a laptop or tablet.

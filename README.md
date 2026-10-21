@@ -31,14 +31,14 @@ lab-01-ospf/
     └── tickets/                   per-ticket fault lines (source)
 ```
 
-A typical guide contains:
+A typical guide contains, with a time estimate on every Part:
 
 - a Readiness Check on the theory the lab depends on
 - Part 1, the baseline, given in full
 - guided Parts, then semi-guided ones, then open Parts with acceptance tables
 - "Break it" experiments: predict, break, observe, explain, restore
-- a "Beyond the Book" extension
-- 2 to 4 troubleshooting tickets, each a different kind of fault
+- a deep dive or "Beyond the Book" extension, as far as the depth level allows
+- 1 to 4 troubleshooting tickets depending on the depth level, each a different kind of fault
 - reflection questions, a build-your-own command reference and a hint appendix
 - Platform Notes on emulator limits
 
@@ -105,10 +105,24 @@ Give your agent a chapter and ask for a lab:
 
 The skill first asks, in one round, about anything it can't work out from your request:
 
-1. **Output folder.**
-2. **Platform and images.** The default is whatever the book teaches.
-3. **Emulator build:** files only (the default), CML via MCP, or GNS3 via MCP.
-4. **Test on the emulator before delivery?** Off by default, because it uses many tokens.
+1. **Depth level** (always asked, unless you already said): see below.
+2. **Output folder.**
+3. **Platform and images.** The default is whatever the book teaches.
+4. **Emulator build:** files only (the default), CML via MCP, or GNS3 via MCP.
+5. **Test on the emulator before delivery?** Off by default, because it uses many tokens.
+
+### Depth levels and time budget
+
+Your time is what the lab spends, so every lab is built to a time budget:
+
+| Level | Time per lab | What you get |
+|---|---|---|
+| **1 Low** | 45–60 min | The chapter's core concepts only |
+| **2 Medium** (default) | about 1.5 h, sometimes a bit longer | The whole chapter, one short deep dive, and at most one small, useful extra from outside the book |
+| **3 High** | about 3 h | Alternatives compared side by side, more break-and-fix experiments, 1–2 Beyond the Book items |
+| **4 Max** | up to about 4 h per lab, as a series if needed | The deepest treatment, including useful material not in the book, but always on the chapter's certification track |
+
+The skill sorts every concept into core, support and extra, and plans the time per Part before it writes anything. It uses design tricks to avoid wasted minutes: one observation that shows several mechanisms, loading checkpoint configs instead of retyping the same block, no waiting on long timers, and theory as 2-minute questions. If a chapter still doesn't fit, it splits it into several labs rather than overrunning. Every Part heading shows its estimate, the guide shows the total, and the build fails if the total exceeds the level's cap, or if the estimates are unrealistically low for the content. The concept map lists what was deferred, so you can see what a higher depth would add. Details: [`references/depth-and-time.md`](references/depth-and-time.md).
 
 It then extracts the chapter, builds a concept inventory, designs the smallest topology that exercises every concept, and writes the solution deltas and tickets. Next it generates everything mechanical with `labkit.py`, writes the guide and answer key, and checks them with a lint pass and a rendered preview.
 

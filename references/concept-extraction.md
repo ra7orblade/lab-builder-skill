@@ -38,16 +38,16 @@ Diagrams that exist only as images can carry concepts the text omits, such as a 
 One row per **distinct** knob, behaviour or idea. Typical chapters yield 25–80 rows. Keep it in the lab folder, because it is part of the deliverable and the user can audit coverage from it.
 
 ```markdown
-| ID | Concept | Book ref | Kind | Lab treatment | Where in lab |
-|----|---------|----------|------|---------------|--------------|
-| C01 | Router ID selection order | §8.2, p.214 | MECH | Predict + observe + Break it (change RID, clear process) | P2 S4 |
-| C02 | network statement with wildcard | §8.3, p.216 | CONFIG | Task (L1), compare with C03 | P2 S2 |
-| C03 | Interface-level enablement | §8.3, p.217 | CONFIG | Task (L1), compare question | P2 S3 |
-| C04 | Hello/dead timers must match | §8.5, p.225 | FAILURE | Break it + Ticket 1 | P4 S3, T1 |
-| C05 | LSA types 1-5,7 | §9.2, p.240 | MECH | Observe LSDB + explain-absence question | P3 S2 |
-| C06 | When to use NSSA vs stub | §9.4 | DESIGN | Reflection Q2 | Reflection |
-| C07 | Virtual links | §9.5 | CONFIG | Task (L3) with acceptance table | P5 |
-| C08 | Hardware-specific feature X | §9.7 | LIMIT | Not emulatable → Platform note + Question | App. B |
+| ID | Concept | Book ref | Kind | Tier | Lab treatment | Where in lab |
+|----|---------|----------|------|------|---------------|--------------|
+| C01 | Router ID selection order | §8.2, p.214 | MECH | Core | Predict + observe + Break it (change RID, clear process) | P2 S4 |
+| C02 | network statement with wildcard | §8.3, p.216 | CONFIG | Core | Task (L1), compare with C03 | P2 S2 |
+| C03 | Interface-level enablement | §8.3, p.217 | CONFIG | Support | Task (L1), compare question | P2 S3 |
+| C04 | Hello/dead timers must match | §8.5, p.225 | FAILURE | Core | Break it + Ticket 1 | P4 S3, T1 |
+| C05 | LSA types 1-5,7 | §9.2, p.240 | MECH | Support | Observe LSDB + explain-absence question | P3 S2 |
+| C06 | When to use NSSA vs stub | §9.4 | DESIGN | Support | Reflection Q2 | Reflection |
+| C07 | Virtual links | §9.5 | CONFIG | Extra | Task (L3) with acceptance table | P5 |
+| C08 | Hardware-specific feature X | §9.7 | LIMIT | Extra | Not emulatable → Platform note + Question | App. B |
 ```
 
 **Kinds and their mandatory treatment:**
@@ -62,19 +62,23 @@ One row per **distinct** knob, behaviour or idea. Typical chapters yield 25–80
 | DESIGN | When or why to choose an option | A Reflection question, or framed as a design decision in an L3 Part |
 | LIMIT | Not reproducible on the chosen platform or emulator | A Platform Note, plus a substitute exercise or a question. Say so honestly. |
 
-**Coverage rule:** every row ends up with a treatment and a location, or with an explicit reason it is out of scope. Close `concept-map.md` with a coverage summary, e.g. "62/64 concepts covered, 2 deferred: C41 (hardware ASIC detail, LIMIT) and C57 (covered in chapter 12's lab)".
+**Tier** (Core, Support, Extra) decides how much lab time a concept gets at the chosen depth level; see `depth-and-time.md` §3.
 
-## 3. Depth: as deep as the chapter, plus one step
+**Coverage rule:** every row ends up with a treatment and a location, or with an explicit reason it is out of scope or deferred at this depth. Close `concept-map.md` with a coverage summary, e.g. "62/64 concepts covered, 2 deferred: C41 (hardware ASIC detail, LIMIT) and C57 (covered in chapter 12's lab)".
 
-- **Minimum depth = the book's depth.** If the chapter spends one paragraph on a feature, it still gets a task. If it shows three ways to do something, the lab uses all three and compares them.
-- For every CONFIG there is at least **one verification and one "why" question**.
-- **One step further** goes in the "Beyond the Book" Part. Pick 1–2 items, label them clearly, and confirm the platform supports them:
+## 3. Depth: set by the chosen level
+
+The user's depth level (Low, Medium, High, Max) decides how deep the lab goes and how much time it may take. The levels, the time budget and the tier rules are in `depth-and-time.md`. Read it before designing. In short:
+
+- **The book's depth is the upper limit for Low and Medium, not the minimum.** A feature the chapter mentions in one paragraph doesn't automatically earn a task. Its tier and the level decide whether it gets a step, a 2-minute question, or is deferred.
+- For every CONFIG that gets a task, there is at least **one verification and one "why" question**.
+- **Going beyond the input** depends on the level: none at Low, one short deep dive plus at most one small extra at Medium, more at High and Max. Every item must pass the track test (`depth-and-time.md` §2). Good candidates, when they pass:
   - a feature the book *mentions but does not explain*
   - an interaction with a technology from an earlier chapter (e.g. FHRP plus IP SLA tracking, or routing plus BFD)
   - the IPv6 or dual-stack variant when the book covers only IPv4, or the reverse
   - an operational concern: convergence timing, scale (summarisation, filtering), security hardening (authentication, protection features)
   - a programmatic verification angle, e.g. reading the same state over an API, when it fits the course
-- Do **not** pile on features the chapter does not motivate. One well-chosen extension beats five shallow ones.
+- Do **not** pile on features the chapter doesn't motivate. One well-chosen extension beats five shallow ones.
 
 ## 4. One lab or several?
 
@@ -82,11 +86,11 @@ Netacad splits by technology cluster. Chapter 15 (FHRP, NAT, NTP) becomes five l
 
 Split when:
 
-- the inventory falls into clusters that need **different topologies**, or that do not depend on each other
-- a single lab would exceed **about 6 Parts** or **about 3 hours** of learner time
+- the inventory falls into clusters that need **different topologies**, or that don't depend on each other
+- the planned time exceeds the depth level's **hard cap** even after the time savers in `depth-and-time.md` §4
 - the chapter covers alternatives best learned side by side but separately, e.g. three redundancy protocols
 
-Each lab gets its own folder (`lab-01-<slug>`, `lab-02-<slug>`), its own topology and its own guide. One shared `concept-map.md` at the chapter folder level maps each concept to its lab.
+Each lab gets its own folder (`lab-01-<slug>`, `lab-02-<slug>`), its own topology, its own guide and the same depth level. One shared `concept-map.md` at the chapter folder level maps each concept to its lab.
 
 ## 5. Ordering Parts
 
@@ -104,4 +108,4 @@ Order Parts by dependency first, and only then by the book's section order:
 
 ## 6. Readiness Check source
 
-Take the 3–6 most load-bearing THEORY or MECH rows, the ones that a misunderstanding of would wreck the lab. Turn each into an explanation question with the book reference.
+Take the most load-bearing THEORY or MECH rows (3 at Low, up to 6 at Max; see `depth-and-time.md` §1), the ones that a misunderstanding of would wreck the lab. Turn each into an explanation question with the book reference.

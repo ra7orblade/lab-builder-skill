@@ -1,6 +1,6 @@
 # Lab - {{Verb}} {{Technology}}
 
-<p class="meta">{{Book title}} · Chapter {{N}}: {{Chapter title}} · Estimated time: {{90-180 min}} · Platform: {{platform / images / emulator}}</p>
+<p class="meta">{{Book title}} · Chapter {{N}}: {{Chapter title}} · Platform: {{platform / images / emulator}}</p>
 
 ## Topology
 
@@ -15,6 +15,8 @@
 ## Objectives
 
 <!-- @objectives -->
+
+<!-- @time -->
 
 ## Background / Scenario
 
@@ -32,7 +34,7 @@
 - {{emulator lab name or import file}}
 - This lab folder: `initial-configs/`, `topology/`, `solutions/`
 
-## Before You Start: Readiness Check
+## Before You Start: Readiness Check ({{2 per question}} min)
 
 <!-- @include skill:snippets/readiness-intro.md -->
 
@@ -48,7 +50,7 @@
 
 # Instructions
 
-## Part 1: Build the Network and Load the Initial Configurations
+## Part 1: Build the Network and Load the Initial Configurations ({{8-12}} min)
 
 In Part 1 you start the topology and confirm the baseline. The baseline contains {{exact list}}. Everything this chapter covers is deliberately missing.
 
@@ -66,7 +68,7 @@ a. {{What to check.}}
 
 > **Checkpoint:** {{Binary, observable. E.g. every direct link answers a ping; no chapter feature is running.}}
 
-## Part 2: {{Configure and Verify <core feature>}}
+## Part 2: {{Configure and Verify <core feature>}} ({{N}} min)
 
 {{What this part builds and why it comes first. Two sentences.}}
 
@@ -94,11 +96,11 @@ a. {{Outcome plus every value needed, never the command.}} (**Hint H2.1**)
 
 <div class="answer short"></div>
 
-## Part 3: {{Semi-guided part: checkpoints state WHAT must be true, the learner picks the command}}
+## Part 3: {{Semi-guided part: checkpoints state WHAT must be true, the learner picks the command}} ({{N}} min)
 
 {{Same building blocks as Part 2, with less help.}}
 
-## Part 4: {{Open part}}
+## Part 4: {{Open part. High and Max only}} ({{N}} min)
 
 **Requirements**
 
@@ -110,11 +112,13 @@ a. {{Outcome plus every value needed, never the command.}} (**Hint H2.1**)
 |---|---|---|
 | 1 | {{Observable result}} | |
 
-## Part {{N-2}}: Beyond the Book: {{Topic}}
+## Part {{N-2}}: Beyond the Book: {{Topic}} ({{N}} min)
+
+{{High and Max only. At Medium, put the deep dive in one step of an earlier Part and delete this Part. At Low, delete it.}}
 
 > **Beyond the book:** {{What this adds beyond the chapter, and why a practitioner needs it.}}
 
-## Part {{N-1}}: Trouble Tickets
+## Part {{N-1}}: Trouble Tickets ({{12-20 per ticket}} min)
 
 <!-- @include skill:snippets/ticket-method.md -->
 
@@ -128,7 +132,9 @@ a. {{Outcome plus every value needed, never the command.}} (**Hint H2.1**)
 
 Hint: **H{{N-1}}.1**
 
-## Part {{N}}: Challenge (optional)
+## Part {{N}}: Challenge (optional, {{20-30}} min)
+
+{{Medium: optional and not counted in the budget. Low: delete this Part.}}
 
 {{Import topology/challenge.cml.yaml. Several faults, no hints.}}
 
@@ -136,7 +142,7 @@ Hint: **H{{N-1}}.1**
 |---|---|
 | {{Observable result}} | |
 
-## Reflection Questions
+## Reflection Questions ({{2 per question}} min)
 
 1. {{Transfer question}}
 
@@ -146,7 +152,7 @@ Hint: **H{{N-1}}.1**
 
 <div class="answer"></div>
 
-## Build Your Own Command Reference
+## Build Your Own Command Reference (5 min)
 
 <!-- @include skill:snippets/command-reference.md -->
 

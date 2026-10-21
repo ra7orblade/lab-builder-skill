@@ -600,11 +600,84 @@ def config_lines(folder):
     return out
 
 
+# --------------------------------------------------------------------------- time budget (references/depth-and-time.md)
+
+DEPTHS = {"low": ("Low", 60, 70), "medium": ("Medium", 90, 110), "high": ("High", 180, 210), "max": ("Max", 240, 240)}
+TIME_RE = re.compile(r"\((optional,\s*)?(\d+)\s*min\)\s*$", re.I)
+
+
+def lab_depth(lab):
+    """lab.depth from topology.yaml (low|medium|high|max or 1-4); None for labs made before depth levels."""
+    f = topo_file(lab)
+    if not f.exists():
+        return None
+    d = str(load_topology(f)["lab"].get("depth") or "").strip().lower()
+    return {"1": "low", "2": "medium", "3": "high", "4": "max"}.get(d, d) or None
+
+
+def time_sections(text):
+    """[(heading, minutes or None, optional, body)] for each '## ' section before the appendices."""
+    out, chunks = [], re.split(r"^(## .*)$", text, flags=re.M)
+    for k in range(1, len(chunks), 2):
+        head, body = chunks[k][3:].strip(), chunks[k + 1]
+        if head.lower().startswith("appendix"):
+            break
+        m = TIME_RE.search(head)
+        out.append((head, int(m[2]) if m else None, bool(m and m[1]) or "optional" in head.lower(), body))
+    return out
+
+
+def content_minutes(head, body):
+    """Lower-bound estimate from what a section asks the learner to do (costs from depth-and-time.md)."""
+    mins = len(re.findall(r"^### Step", body, re.M)) * (3 if head.startswith("Part 1:") else 6)
+    mins += 5 * len(re.findall(r"^>\s*\*\*Break it", body, re.M))
+    mins += 12 * len(re.findall(r"^### Ticket", body, re.M))
+    mins += 3 * len(re.findall(r"^\|\s*\d+\s*\|", body, re.M))  # acceptance-test rows
+    if re.search(r"Readiness|Reflection", head, re.I):
+        mins += 2 * len(re.findall(r"^\d+\.\s", body, re.M))
+    return mins
+
+
+def time_totals(text):
+    secs = time_sections(text)
+    req = sum(m for _, m, opt, _ in secs if m and not opt)
+    extra = sum(m for _, m, opt, _ in secs if m and opt)
+    floor = sum(content_minutes(h, b) for h, m, opt, b in secs if not opt)
+    return secs, req, extra, floor
+
+
+def fmt_minutes(m):
+    h, m = divmod(m, 60)
+    return f"{h} h {m} min" if h and m else f"{h} h" if h else f"{m} min"
+
+
+def time_issues(text, depth):
+    if depth not in DEPTHS:
+        return [f"unknown lab.depth '{depth}' in topology.yaml (use low, medium, high or max)"]
+    name, target, cap = DEPTHS[depth]
+    secs, req, _, floor = time_totals(text)
+    issues = [f"'{h[:50]}' has no time estimate: end the heading with '(N min)'"
+              for h, m, _, _ in secs if m is None and re.match(r"Part \d+:", h)]
+    if req > cap:
+        issues.append(f"estimated time {req} min exceeds the {name} cap of {cap} min (target {target}): "
+                      "apply the time savers or split the lab (references/depth-and-time.md)")
+    if floor and req < 0.7 * floor:
+        issues.append(f"headings add up to {req} min, but the content needs at least ~{floor} min: re-estimate honestly")
+    return issues
+
+
 def cmd_lint(a):
     guide = Path(a.guide)
     text = guide.read_text()
     lab = Path(a.lab) if a.lab else guide.parent
     issues = []
+    depth = lab_depth(lab)
+    if depth:
+        issues += time_issues(text, depth)
+        _, req, extra, _ = time_totals(text)
+        name, target, cap = DEPTHS.get(depth, (depth, 0, 0))
+        print(f"TIME  {req} min" + (f" (+ {extra} min optional)" if extra else "") +
+              f", depth {name}: target {target}, cap {cap}")
     # hint references vs. definitions
     refs = set(re.findall(r"\bH\d+\.\d+[a-z]?\b", re.sub(r"^#+ .*$", "", text, flags=re.M)))
     defs = set(re.findall(r"^#+\s*(H\d+\.\d+[a-z]?)\b", text, flags=re.M))
@@ -917,6 +990,7 @@ def expand_text(text, lab):
       <!-- @ticket N -->                fault lines of solutions/tickets/ticket-N/*.delta (answer key)
       <!-- @table addressing -->        addressing table from topology.yaml
       <!-- @objectives -->              bullet list of this document's '## Part N: ...' headings
+      <!-- @time -->                    estimated time from lab-guide.md's '(N min)' headings, plus the depth
     """
     lines = text.split("\n")
     t = load_topology(topo_file(lab))
@@ -967,6 +1041,12 @@ def directive_content(kind, args, lab, t, whole):
     if kind == "objectives":
         heads = re.findall(r"^##\s+(Part\s+\d+):\s*(.+)$", whole, flags=re.M)
         return "\n".join(f"- **{p}:** {title}" for p, title in heads)
+    if kind == "time":
+        g = lab / "lab-guide.md"
+        _, req, extra, _ = time_totals(g.read_text() if g.exists() else whole)
+        depth = DEPTHS.get(lab_depth(lab) or "")
+        return (f"**Estimated time:** about {fmt_minutes(req)}" + (f" (+ {fmt_minutes(extra)} optional)" if extra else "")
+                + (f" · **Depth:** {depth[0]}" if depth else ""))
     return f"**UNKNOWN marker @{kind}**"
 
 
@@ -1023,6 +1103,7 @@ def cmd_build(a):
     if guide.exists():
         r, out = quiet(cmd_lint, argparse.Namespace(guide=str(guide), lab=str(lab)))
         issues = [l for l in out.splitlines() if l.startswith("LINT")]
+        print("".join("time: " + l[6:] + "\n" for l in out.splitlines() if l.startswith("TIME")), end="")
         print(f"lint: {len(issues)} issue(s)" + ("".join("\n  " + l[6:] for l in issues[:15])))
         rc |= r
     if a.pdf:
