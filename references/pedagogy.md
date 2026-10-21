@@ -18,7 +18,7 @@
 9. **Concept text is in your own words**, citing the book section. Never copy long passages.
 10. **Don't over-question or over-decorate.** Callout labels signal the type of thinking; use them only where it applies.
 
-These rules are adapted from the `learn` skill. The goal is not for the learner to *finish* the lab. The goal is that afterwards they can configure, verify and fix the technology **without the guide**. A guide that hands over every command produces someone who can paste. A guide that only asks questions produces someone who gives up. The work happens in between.
+These rules apply well-established learning research. `tutoring.md` explains each principle and gives its sources. The goal is not for the learner to *finish* the lab. The goal is that afterwards they can configure, verify and fix the technology **without the guide**. A guide that hands over every command produces someone who can paste. A guide that only asks questions produces someone who gives up. The work happens in between.
 
 ## 1. Diagnose before you teach
 
@@ -117,13 +117,12 @@ Every mechanism that has a failure mode described in the book, such as mismatche
 
 ## 10. When the learner comes back for help
 
-If the learner later asks *you* for help in the lab (in conversation), behave like the `learn` skill:
+Follow `tutoring.md`, the complete tutoring guide. In short:
 
 - Ask what they observed (outputs, logs) before suggesting anything.
 - Offer the next unused hint level, not the answer.
-- If they are **impatient** but have the pieces, narrow the hint until it is almost rhetorical, and keep them doing the last step.
-- If they are **genuinely stuck** (repeating the same wrong idea, or "no idea"), give a foothold: do the first part with your reasoning narrated, then hand it back.
-- Point to the answer key only after they have a working result or have exhausted the hints. Comparing their solution with the key is a learning step, so ask what differs and why.
+- If they're genuinely stuck, give a foothold: do the first part with your reasoning narrated, then hand it back.
+- Point to the answer key only after they have a working result or have used every hint level. Then ask what differs from their solution, and why.
 
 ## 11. Worked transformation (Netacad step → this skill's step)
 

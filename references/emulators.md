@@ -6,13 +6,13 @@ Only do this when the user chose an emulator build at intake. The deliverable is
 
 - **Creating a new lab is what the user asked for.** Deleting, wiping or modifying an existing lab, even after a name collision, needs explicit confirmation. On a collision, pick a new title.
 - **Testing is opt-in**, decided at intake; the default is no. Without testing, never push solution or ticket configs into the learner's lab.
-- **Ask before downloading or installing anything** (MCP extras such as pyATS, images, packages), and before editing MCP or Claude configuration.
+- **Ask before downloading or installing anything** (MCP extras such as pyATS, images, packages), and before editing the MCP configuration or your own agent configuration.
 - **Don't start nodes unless the user asked.** Starting them costs server resources.
 - **Read back what you built** (node and link counts, endpoints) before reporting success.
 
 ## 1. Discover the MCP tools
 
-Look for MCP tools whose server or tool names mention `cml`, `modeling`, `gns3`, `eve` or `containerlab`. If they are deferred, load them with a single ToolSearch for the capabilities you need:
+Look for MCP tools whose server or tool names mention `cml`, `modeling`, `gns3`, `eve` or `containerlab`. If your environment loads tools on demand, load them in one search covering the capabilities you need:
 
 - status and licensing
 - node definitions or templates

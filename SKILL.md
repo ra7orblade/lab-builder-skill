@@ -1,14 +1,14 @@
 ---
 name: lab-builder-skill
 description: |
-  Build a complete, learner-centred hands-on lab from a textbook chapter given as PDF and/or Markdown/text. The output is a concept inventory, a topology diagram, an addressing table, baseline configs, a lab guide (.md + .pdf) that teaches through tasks, predictions and graded hints instead of copy-paste commands, troubleshooting tickets, and a separate answer key. Modelled on Cisco Netacad lab structure but vendor- and technology-neutral. Optionally builds the initial, still-unconfigured lab in an emulator (Cisco Modeling Labs, GNS3) through an MCP server, and optionally validates it there when the user asks.
-  Use when the user gives a chapter (PDF, .md or .txt) and asks for a lab, lab guide, practice lab, hands-on exercises or lab topology for it, or asks to build that chapter's lab in CML/GNS3/an emulator.
-  Do not use for answering theory questions (use learn) or for coaching someone through an existing lab (follow references/pedagogy.md §10).
+  Build a complete, learner-centred hands-on lab from a textbook chapter (PDF, Markdown or text): concept inventory, topology diagram, addressing table, baseline configs, a fillable lab guide (.md + .pdf) that teaches through tasks, predictions and graded hints instead of copy-paste commands, troubleshooting tickets and a separate answer key. Netacad-style structure, but vendor- and technology-neutral. Optionally builds the initial, unconfigured lab in Cisco Modeling Labs or GNS3 through an MCP server, and validates it there on request.
+  Use when the user gives a chapter and asks for a lab, lab guide, practice lab, hands-on exercises or lab topology for it, or asks to build that chapter's lab in CML/GNS3/an emulator. Also use when a learner working through such a lab asks for help, a hint, or an explanation of one of its concepts (coaching mode).
+  Do not use for general questions unrelated to a chapter or lab.
 ---
 
 # Lab Builder Skill
 
-You turn a book chapter into a lab the learner **builds themselves**. Netacad-style structure (`references/lab-anatomy.md`) plus `learn` principles: diagnose first, tasks instead of commands, predict before acting and explain after, fading scaffolds, graded hints, real troubleshooting. Answers live in a separate answer key.
+You turn a book chapter into a lab the learner **builds themselves**. Netacad-style structure (`references/lab-anatomy.md`) plus established learning principles (`references/tutoring.md`): diagnose first, tasks instead of commands, predict before acting and explain after, fading scaffolds, graded hints, real troubleshooting. Answers live in a separate answer key.
 
 `SKILL_DIR` means this skill's folder. `LAB` means the output lab folder. Scripts need Python 3 + PyYAML, plus poppler-utils for PDF input and Chromium (or WeasyPrint) for PDFs. pypdf makes the PDF answer boxes fillable; without it they are drawn only.
 
@@ -30,7 +30,9 @@ You turn a book chapter into a lab the learner **builds themselves**. Netacad-st
 
 ## Workflow
 
-### 0. Intake: one AskUserQuestion, only for what is missing
+### 0. Intake: one round of questions, only for what is missing
+
+Ask everything in a single message. Use your environment's structured-question tool if it has one.
 
 1. **Output folder.** Propose one, e.g. next to the course's other labs. It must be inside the working directory, or the user must confirm it.
 2. **Platform and images.** Default to what the book teaches; lightweight emulator images where possible.
@@ -125,10 +127,19 @@ Report briefly:
 
 Don't paste the guide. Don't keep `_work/` in the delivered folder, unless the user wants the extraction.
 
+## Coaching mode
+
+When a learner asks for help, a hint or an explanation while working through a lab (rather than asking you to build one), skip the workflow above:
+
+1. Load `references/tutoring.md` and follow its tutoring loop.
+2. Find the lab folder. Read the relevant step in `lab-guide.md`, its hint in Appendix A, and the matching part of `solutions/answer-key.md`, so your help matches the lab's values and scaffold level.
+3. Never paste solution configs or ticket answers unless the tutoring guide's conditions for telling are met.
+
 ## Reference files (load on demand)
 
 | File | Load when |
 |---|---|
+| `references/tutoring.md` | Coaching mode; also when you need the reasoning behind a pedagogy rule |
 | `references/pedagogy.md` | Writing the guide. The rules card at the top is mandatory; the rest only when unsure |
 | `references/concept-extraction.md` | Steps 1-2, if this is your first lab with the skill |
 | `references/topology-and-configs.md` | Step 3-4: schema, markers, deltas, platform profiles |

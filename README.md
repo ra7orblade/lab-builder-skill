@@ -87,9 +87,15 @@ Restart Claude Code. The skill is picked up automatically when you ask for a lab
 
 Zip the repository folder and upload it under **Settings → Capabilities → Skills**. The scripts need code execution enabled.
 
+### Other AI agents
+
+The skill is self-contained: plain Markdown instructions plus Python scripts, with no dependency on other skills or on any one vendor's tools. Agents that support the open Agent Skills format (a folder containing `SKILL.md`) can load it directly. For any other agent that can read files and run Python, put the folder somewhere it can reach and tell it:
+
+> Read `lab-builder-skill/SKILL.md` and follow it to build a lab from `chapter.pdf`.
+
 ## Usage
 
-Give Claude a chapter and ask for a lab:
+Give your agent a chapter and ask for a lab:
 
 > Build a hands-on lab from `chapter-08-ospf.pdf`.
 
@@ -108,6 +114,16 @@ It then extracts the chapter, builds a concept inventory, designs the smallest t
 
 If a chapter covers several unrelated technologies, the skill may split it into several labs (`lab-01-…`, `lab-02-…`) with one shared concept map.
 
+### Coaching mode
+
+The skill also tutors the learner while they work through a lab. Ask for help as you would ask a lab instructor:
+
+> I'm on Part 3 Step 2 of the OSPF lab and R2 won't form an adjacency. Here's my `show ip ospf neighbor` output.
+
+> Why does the router with priority 0 never become DR?
+
+It asks what you observed before advising, gives the next hint level rather than the answer, explains concepts using your own lab topology, and turns misconceptions into small predict-and-observe experiments. Its approach is grounded in published learning research, summarised with sources in [`references/tutoring.md`](references/tutoring.md).
+
 ### Safety defaults
 
 The skill is designed to be cautious with your environment:
@@ -119,7 +135,7 @@ The skill is designed to be cautious with your environment:
 
 ## Using the scripts directly
 
-The scripts also work without Claude, which is handy when you edit a lab by hand:
+The scripts also work without an AI agent, which is handy when you edit a lab by hand:
 
 ```bash
 # Extract a chapter (PDF, Markdown or text; several inputs can be merged)
@@ -152,8 +168,8 @@ For CML, interface names per node definition are cached in [`assets/cml-nodedefs
 
 | Path | Contents |
 |---|---|
-| `SKILL.md` | The skill's instructions and workflow (loaded by Claude) |
-| `references/` | Detailed guidance, loaded on demand: pedagogy rules, concept extraction, topology schema, emulator procedures, validated platform facts, and the reference-lab analysis |
+| `SKILL.md` | The skill's instructions and workflow (loaded by the agent) |
+| `references/` | Detailed guidance, loaded on demand: pedagogy rules, learning principles and tutoring, concept extraction, topology schema, emulator procedures, validated platform facts, and the reference-lab analysis |
 | `scripts/` | `extract_chapter.py`, `labkit.py` and `md2pdf.py` |
 | `assets/` | Guide, answer-key and lab README templates; reusable snippets; platform profiles; print CSS; CML node-definition cache |
 

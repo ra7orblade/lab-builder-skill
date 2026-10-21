@@ -18,7 +18,7 @@ python3 <skill>/scripts/extract_chapter.py <chapter.pdf> [notes.md ...] -o "<LAB
 | `key-terms.md` | Bold or italic terms in body text: concept candidates. |
 | `captions.md` | Figures, tables and examples. Tables often hold defaults, comparisons and decision orders. |
 
-If a PDF yields almost no text, it's scanned. Ask the user for a Markdown or text version, or OCR it with the `pdf` skill. If the user gives a whole book, ask which chapter, or find it in the outline and pass `--first/--last`.
+If a PDF yields almost no text, it's scanned. Ask the user for a Markdown or text version, or OCR it first (for example with `ocrmypdf`, which needs Tesseract; ask before installing it). If the user gives a whole book, ask which chapter, or find it in the outline and pass `--first/--last`.
 
 **Token discipline:** write `concept-map.md` *while* reading, section by section. Afterwards, design from the concept map, not from the chapter text.
 
