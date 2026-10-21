@@ -7,6 +7,7 @@ base:
   - "hostname {name}"
   - "no ip domain lookup"
   - "cdp run"
+  - "logging console"
   - "line con 0"
   - " exec-timeout 0 0"
   - " logging synchronous"
